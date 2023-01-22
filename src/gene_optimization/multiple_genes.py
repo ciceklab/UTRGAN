@@ -10,8 +10,7 @@ from tensorflow.keras.models import load_model
 import sys
 sys.path.append('/home/sina/ml/gan/dev/shot0')
 sys.path.insert(0, '/home/sina/ml/gan/dev/shot0/lib')
-# from lib import models
-# from lib import utils
+import argparse
 import socket
 import datetime
 import random
@@ -28,9 +27,22 @@ import requests, sys
 
 np.random.seed(25)
 
-BATCH_SIZE = 32
-SEQ_BATCH= 16
+parser = argparse.ArgumentParser()
 
+parser.add_argument('-gp', type=str, required=True, default='./../../data/reference_gene_info.npy')
+parser.add_argument('-seqs', type=str, required=True,default='./../../data/seqs.npy')
+parser.add_argument('-dc', type=str, required=False, default=32)
+parser.add_argument('-uc', type=int, required=False ,default=32)
+parser.add_argument('-lr', type=int, required=False ,default=5)
+parser.add_argument('-gpu', type=str, required=False ,default='-1')
+
+args = parser.parse_args()
+
+os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
+
+BATCH_SIZE = int(args.dc)
+SEQ_BATCH= int(args.uc)
+LR = np.exp(-int(args.lr))
 
 def fetch_seq(start, end, chr, strand):
     server = "https://rest.ensembl.org"
@@ -45,7 +57,7 @@ def fetch_seq(start, end, chr, strand):
 
     return r.text
 
-def parse_biomart(path = 'martquery_0721120207_840.txt'):
+def parse_biomart(path = 'reference_gene_info.txt'):
 
     file = path
 
@@ -197,8 +209,6 @@ def recover_seq(samples, rev_charmap):
     return seqs
 
 
-
-
 def replace_xpresso_seqs_single_v2(gens,df:pd.DataFrame,refs,indices,batch_size=SEQ_BATCH):
     seqs = []
     # originals = []
@@ -220,47 +230,10 @@ def replace_xpresso_seqs_single_v2(gens,df:pd.DataFrame,refs,indices,batch_size=
                 gen_dna = gen_dna + (10500-len(gen_dna)) * "A"
 
             seqs.append(gen_dna)
-            # originals.append(origin_dna) 
 
     seqs = tf.convert_to_tensor(seqs)
-    # originals = tf.convert_to_tensor(originals)    
     return seqs, []
 
-
-
-# def replace_xpresso_seqs_single(gens,df:pd.DataFrame,refs,index):
-
-#     if isinstance(gens, tf.Tensor):
-#         gens = gens.numpy().astype('str')
-
-#     seqs = []
-#     originals = []
-#     len_ = abs(int(df.iloc[index]['utr_start']) - int(df.iloc[index]['utr_end']))
-
-#     origin_dna = refs[index]
-    
-#     if len(origin_dna) != 10628:
-#         origin_dna = origin_dna + (10628-len(origin_dna)) * "A"
-    
-
-#     for i in range(len(gens)):
-#         length = len(gens[i])
-#         diff = length - len_
-#         gen_dna = origin_dna[:7000] + gens[i] + origin_dna[7000+abs(int(df.iloc[index]['utr_start']) - int(df.iloc[index]['utr_end'])):10500 - diff]
-        
-#         original = origin_dna[:10500]
-        
-#         if len(gen_dna) < 10500:
-#             gen_dna = gen_dna + (10500 - len(gen_dna)) * "A"
-
-#         seqs.append(gen_dna)
-
-
-#     seqs = tf.convert_to_tensor(seqs)
-
-#     original = tf.convert_to_tensor([original for i in range(BATCH_SIZE)])
-
-#     return seqs, original
 
 rna_vocab = {"A":0,
              "C":1,
@@ -279,251 +252,160 @@ def log(samples_dir=False):
     log_dir = "{}:{}".format(socket.gethostname(), full_logdir)
     return full_logdir, 0
 
-logdir, checkpoint_baseline = log(samples_dir=True)
+if __name__ == '__main__':
 
-df = parse_biomart()
+    logdir, checkpoint_baseline = log(samples_dir=True)
 
-df = df[:8200]
+    df = parse_biomart()
 
-model = load_model('/home/sina/ml/gan/dev/predict/xpresso/humanMedian_trainepoch.11-0.426.h5')
+    df = df[:8200]
 
-model = convert_model(model)
+    model = load_model('/home/sina/ml/gan/dev/predict/xpresso/humanMedian_trainepoch.11-0.426.h5')
 
-
-wgan = tf.keras.models.load_model(r'/home/sina/ml/gan/dev/checkpoint_h5/checkpoint_50000.h5')
-
-"""
-Data:
-"""
-
-noise = tf.Variable(tf.random.normal(shape=[BATCH_SIZE,40]))
-
-tf.random.set_seed(25)
+    model = convert_model(model)
 
 
+    wgan = tf.keras.models.load_model('./../../models/checkpoint_50000.h5')
 
-diffs = []
-init_exps = []
+    """
+    Data:
+    """
 
-opt_exps = []
+    noise = tf.Variable(tf.random.normal(shape=[BATCH_SIZE,40]))
 
-orig_vals = []
+    tf.random.set_seed(25)
 
-# for i in range(50):
-    # print(f'Seq_n: {i}')
-# noise = tf.Variable(np.random.normal(size=[2, 40]))
-noise = tf.Variable(tf.random.normal(shape=[BATCH_SIZE,40]))
-# noise = tf.random.normal(shape=[BATCH_SIZE,40])
-noise_small = tf.random.normal(shape=[BATCH_SIZE,40],stddev=1e-5)
 
-optimizer = tf.keras.optimizers.Adam(learning_rate=3e-4)
 
-'''
-Optimization takes place here.
-'''
+    diffs = []
+    init_exps = []
 
-bind_scores_list = []
-bind_scores_means = []
-sequences_list = []
+    opt_exps = []
 
-means = []
-maxes = []
+    orig_vals = []
 
-iters_ = []
+    noise = tf.Variable(tf.random.normal(shape=[BATCH_SIZE,40]))
+    noise_small = tf.random.normal(shape=[BATCH_SIZE,40],stddev=1e-5)
 
-OPTIMIZE = True
+    optimizer = tf.keras.optimizers.Adam(learning_rate=LR)
 
-DNA_SEL = False
-indices, refs = select_dna_batch(fname='small_seqs.npy',batch_size=BATCH_SIZE,dna_batch=SEQ_BATCH)
+    '''
+    Optimization takes place here.
+    '''
 
-sequences_init = wgan(noise)
+    bind_scores_list = []
+    bind_scores_means = []
+    sequences_list = []
 
-gen_seqs_init = sequences_init.numpy().astype('float')
+    means = []
+    maxes = []
 
-seqs_gen_init = recover_seq(gen_seqs_init, rev_rna_vocab)
+    iters_ = []
 
-seqs_init, origs = replace_xpresso_seqs_single_v2(seqs_gen_init,df,refs,indices)
+    OPTIMIZE = True
 
-seqs_init = one_hot(seqs_init)
+    DNA_SEL = False
+    indices, refs = select_dna_batch(fname=args.seqs,batch_size=BATCH_SIZE,dna_batch=SEQ_BATCH)
 
-print(tf.shape(seqs_init))
+    sequences_init = wgan(noise)
 
-pred_init = model(seqs_init) 
+    gen_seqs_init = sequences_init.numpy().astype('float')
 
-t = tf.reshape(pred_init,(-1))
+    seqs_gen_init = recover_seq(gen_seqs_init, rev_rna_vocab)
 
-init_t = t.numpy().astype('float')
-# sum_init = tf.reduce_max(t).numpy().astype('float')
-# sum_init = tf.math.argmax()
+    seqs_init, origs = replace_xpresso_seqs_single_v2(seqs_gen_init,df,refs,indices)
 
-if OPTIMIZE:
+    seqs_init = one_hot(seqs_init)
 
-    indices, refs = select_dna_batch(fname='small_seqs.npy',batch_size=BATCH_SIZE,dna_batch=SEQ_BATCH)
-    
-    iter_ = 0
-    for opt_iter in tqdm(range(3000)):
+    print(tf.shape(seqs_init))
+
+    pred_init = model(seqs_init) 
+
+    t = tf.reshape(pred_init,(-1))
+
+    init_t = t.numpy().astype('float')
+
+    if OPTIMIZE:
+
+        indices, refs = select_dna_batch(fname='small_seqs.npy',batch_size=BATCH_SIZE,dna_batch=SEQ_BATCH)
         
-        with tf.GradientTape() as gtape:
-            gtape.watch(noise)
+        iter_ = 0
+        for opt_iter in tqdm(range(3000)):
             
-            sequences = wgan(noise)
+            with tf.GradientTape() as gtape:
+                gtape.watch(noise)
+                
+                sequences = wgan(noise)
 
-            seqs_gen = recover_seq(sequences, rev_rna_vocab)
+                seqs_gen = recover_seq(sequences, rev_rna_vocab)
 
-            seqs2, origs = replace_xpresso_seqs_single_v2(seqs_gen,df,refs,indices)
-        
-            seqs = one_hot(seqs2)
+                seqs2, origs = replace_xpresso_seqs_single_v2(seqs_gen,df,refs,indices)
             
-            with tf.GradientTape() as ptape:
-                ptape.watch(seqs)
-
-                pred =  model(seqs)
-                t = tf.reshape(pred,(SEQ_BATCH,-1))
-                mx = np.amax(t.numpy().astype('float'),axis=0)
-                mx = np.max(mx)
+                seqs = one_hot(seqs2)
                 
-                sum_ = tf.reduce_sum(t,axis=0)
-                sum_ = tf.reduce_sum(sum_).numpy().astype('float')
-                maxes.append(mx)
-                means.append(sum_/BATCH_SIZE)
+                with tf.GradientTape() as ptape:
+                    ptape.watch(seqs)
 
-            g1 = ptape.gradient(pred,seqs)
-            g1 = tf.math.scalar_mul(-1.0, g1)
-            g1 = tf.slice(g1,[0,7000,0],[-1,128,-1])
+                    pred =  model(seqs)
+                    t = tf.reshape(pred,(SEQ_BATCH,-1))
+                    mx = np.amax(t.numpy().astype('float'),axis=0)
+                    mx = np.max(mx)
+                    
+                    sum_ = tf.reduce_sum(t,axis=0)
+                    sum_ = tf.reduce_sum(sum_).numpy().astype('float')
+                    maxes.append(mx)
+                    means.append(sum_/BATCH_SIZE)
 
-            tmp_g = g1.numpy().astype('float')
-            tmp_seqs = seqs_gen
+                g1 = ptape.gradient(pred,seqs)
+                g1 = tf.math.scalar_mul(-1.0, g1)
+                g1 = tf.slice(g1,[0,7000,0],[-1,128,-1])
 
-            tmp_lst = np.zeros(shape=(BATCH_SIZE,128,5))
-            for i in range(len(tmp_seqs)):
-                len_ = len(tmp_seqs[i])
-                edited_g = tmp_g[i][:len_,:]
-                edited_g = np.pad(edited_g,((0,128-len_),(0,1)),'constant')   
-                tmp_lst[i] = edited_g
-                
+                tmp_g = g1.numpy().astype('float')
+                tmp_seqs = seqs_gen
 
-            # g2 = tf.reshape(g1_,(4,-1))
-            # sum = tf.reduce_sum(g2,axis=1)
-            # tf.print(sum)
-            # f = g2.numpy()
-            # for item in f:
-            #     print(list(item[:-100]),sep='-')
-            #     break
+                tmp_lst = np.zeros(shape=(BATCH_SIZE,128,5))
+                for i in range(len(tmp_seqs)):
+                    len_ = len(tmp_seqs[i])
+                    edited_g = tmp_g[i][:len_,:]
+                    edited_g = np.pad(edited_g,((0,128-len_),(0,1)),'constant')   
+                    tmp_lst[i] = edited_g
+                    
+                g1 = tf.convert_to_tensor(tmp_lst,dtype=tf.float32)
 
-            # g1_ = tf.pad(g1_,paddings=[[0,0],[0,0],[0,1]])
-            g1 = tf.convert_to_tensor(tmp_lst,dtype=tf.float32)
-
-            g2 = gtape.gradient(sequences,noise,output_gradients=g1)
-            # x = tf.reshape(g2,(-1))
-            # sum = tf.reduce_sum(x)
-            # tf.print(sum)
-
-        a1 = g2 + noise_small
-        change = [(a1,noise)]
-        # a1 = a1.numpy().tolist()
-        # noise = noise.numpy().tolist()
-        optimizer.apply_gradients(change)
-
-        # noise = tf.convert_to_tensor(noise,dtype=tf.float32)
-
-        iters_.append(iter_)
-        iter_ += 1
-
-    sequences_opt = wgan(noise)
-
-    gen_seqs_opt = sequences_opt.numpy().astype('float')
-
-    seqs_gen_opt = recover_seq(gen_seqs_opt, rev_rna_vocab)
-
-    seqs_opt, origs = replace_xpresso_seqs_single_v2(seqs_gen_opt,df,refs,indices)
-
-    seqs_opt = one_hot(seqs_opt)
-
-    pred_opt = model(seqs_opt)
-
-    t = tf.reshape(pred_opt,(-1))
-    opt_t = t.numpy().astype('float')
-    # sum_opt = tf.reduce_sum(t).numpy().astype('float')
-
-    # print(type(t_orig))
-    # print(t_orig)
+                g2 = gtape.gradient(sequences,noise,output_gradients=g1)
 
 
+            a1 = g2 + noise_small
+            change = [(a1,noise)]
 
-# gen_seqs = wgan(noise)
+            optimizer.apply_gradients(change)
 
-# gen_seqs_max = gen_seqs.numpy().astype('float')
+            iters_.append(iter_)
+            iter_ += 1
 
-# gen_seqs_max = gen_seqs_max[max_indices]
+        sequences_opt = wgan(noise)
 
-# seqs_gen = utils.recover_seq(gen_seqs, rev_rna_vocab)
+        gen_seqs_opt = sequences_opt.numpy().astype('float')
 
-# seqs2, origs = replace_xpresso_seqs_test(seqs_gen,df,test_refs,test_indices)
+        seqs_gen_opt = recover_seq(gen_seqs_opt, rev_rna_vocab)
 
-# seqs = one_hot(seqs2)
+        seqs_opt, origs = replace_xpresso_seqs_single_v2(seqs_gen_opt,df,refs,indices)
 
-# pred =  model(seqs)
+        seqs_opt = one_hot(seqs_opt)
 
-# sequences_init = sequences_init.numpy().astype('float')
+        pred_opt = model(seqs_opt)
 
-# sequences_init = sequences_init[max_indices]
+        t = tf.reshape(pred_opt,(-1))
+        opt_t = t.numpy().astype('float')
 
-# seqs_gen_initial = utils.recover_seq(sequences_init, rev_rna_vocab)
 
-# # seqs_gen = utils.recover_seq(sequences, rev_rna_vocab)
+    with open('single_init_exps_max.npy', 'wb') as f:
+        np.save(f, init_t)
 
-# seqs_initial, origs_test = replace_xpresso_seqs_test(seqs_gen_initial,df,test_refs,test_indices)
+    with open('single_opt_exps_max.npy', 'wb') as f:
+        np.save(f, opt_t)
 
-# seqs_initial = one_hot(seqs_initial)
+    with open('single_opt_exp_seqs.npy', 'wb') as f:
+        np.save(f, seqs_gen_opt)
 
-# pred_initial =  model(seqs_initial)
 
-# print('Initial Exp: {}'.format(np.average(pred)))
-
-# print('Optimized Exp: {}'.format(np.average(pred_initial)))
-
-with open('single_init_exps_max.npy', 'wb') as f:
-    np.save(f, init_t)
-
-with open('single_opt_exps_max.npy', 'wb') as f:
-    np.save(f, opt_t)
-
-with open('single_opt_exp_seqs.npy', 'wb') as f:
-    np.save(f, seqs_gen_opt)
-
-inits = init_t
-opts = opt_t
-
-print(np.max(inits))
-print(np.min(inits))
-
-print(np.max(opts))
-print(np.min(opts))
-
-diffs = opts - inits
-
-print(np.mean(diffs))
-
-positives = []
-negatives = []
-
-positive_inits = []
-negative_inits = []
-
-for i in range(len(diffs)):
-    if diffs[i] >= 0:
-        positive_inits.append(abs(inits[i]))
-        positives.append(diffs[i])
-    if diffs[i] < 0:
-        negative_inits.append(abs(inits[i]))
-        negatives.append(diffs[i])
-
-print(np.mean(positives))
-print(np.mean(negatives))
-print(len(positives))
-print(len(negatives))
-print(np.mean(np.divide(positives,positive_inits)))
-print(np.mean(np.divide(negatives,negative_inits)))
-print(np.mean(positive_inits))
-print(np.mean(negative_inits))
-print(np.max(diffs))

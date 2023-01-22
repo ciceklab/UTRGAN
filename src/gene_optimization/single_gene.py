@@ -22,18 +22,25 @@ import matplotlib.pyplot as plt
 
 tf.compat.v1.enable_eager_execution()
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '5'
-
 from Bio import SeqIO
 import pandas as pd
 import numpy as np
-# from BCBio import GFF
 import requests, sys
 
+parser = argparse.ArgumentParser()
 
+parser.add_argument('-g', type=str, required=True)
+parser.add_argument('-i', type=str, required=True)
+parser.add_argument('-bs', type=int, required=False ,default=64)
+parser.add_argument('-lr', type=int, required=False ,default=5)
+parser.add_argument('-gpu', type=str, required=False ,default='-1')
+
+args = parser.parse_args()
 
 BATCH_SIZE = 128
 # SEQ_BATCH= 32
+
+os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
 
 def fetch_seq(start, end, chr, strand):
@@ -275,390 +282,243 @@ def log(samples_dir=False):
     log_dir = "{}:{}".format(socket.gethostname(), full_logdir)
     return full_logdir, 0
 
-logdir, checkpoint_baseline = log(samples_dir=True)
+if __name__ == '__main__':
 
-model = load_model('/home/sina/ml/gan/dev/predict/xpresso/humanMedian_trainepoch.11-0.426.h5')
+    logdir, checkpoint_baseline = log(samples_dir=True)
 
-model = convert_model(model)
+    model = load_model('./../../models/humanMedian_trainepoch.11-0.426.h5')
 
-parser = argparse.ArgumentParser()
-
-parser.add_argument('-g', type=str, required=True)
-
-args = parser.parse_args()
-
-gene_name = args.g
-
-if gene_name == 'TLR6':
+    model = convert_model(model)
+    LR = np.exp(-args.lr)
     
-    UTRSTARTS = [38856761,38829474,38843639]
-    UTRENDS = [38856817,38829537,38843791]
-    TSS = 38856817
+    path = args.i
+    gene_name = args.g
 
-    STRAND = -1
-    CHR = 4
-
-    UTRSTART = UTRSTARTS[0]
-    UTREND = UTRENDS[0]
-
-    # IFNG
-    UTRSTART = 38856761
-    UTREND = 38856817
-
-    UTRLENGTH = UTREND - UTRSTART
-
-elif gene_name == 'IFNG':
-
-    UTRSTARTS = [68159616]
-    UTRENDS = [68159740]
-    TSS = 68159740
-
-    STRAND = -1
-    CHR = 12
-
-    UTRSTART = UTRSTARTS[0]
-    UTREND = UTRENDS[0]
-
-    UTRLENGTH = UTREND - UTRSTART
-
-elif gene_name == 'TNF':
-
-    # TNF
-    UTRSTARTS = [31575565]
-    UTRENDS = [31575741]
-    TSS = 31575565
-
-    STRAND = 1
-    CHR = 6
-
-    UTRSTART = UTRSTARTS[0]
-    UTREND = UTRENDS[0]
-
-    UTRLENGTH = UTREND - UTRSTART
-
-elif gene_name == 'TP53':
-    
-    # TNF
-    UTRSTARTS = [7687377,7676595]
-    UTRENDS = [7687487,7676622]
-    TSS = 7687487
-
-    STRAND = -1
-    CHR = 17
-
-    UTRSTART = UTRSTARTS[0] 
-    UTREND = UTRENDS[0]
-
-    UTRLENGTH = abs(UTREND - UTRSTART)
-
-# original_gene_sequence = fetch_seq(start=TSS-7000,end=TSS+3500 + 128,chr=CHR,strand=STRAND)
-
-with open(gene_name+'.txt','r') as f:
-    original_gene_sequence = f.readline()
-
-print(original_gene_sequence)
-print(len(original_gene_sequence))
-
-gpath = "/home/sina/ml/gan/dev/checkpoint_h5_old/checkpoint_50000.h5"
-# gpath = "/home/sina/ml/gan/dev/gan/logs/2022.12.30-07h26m29s_neo/checkpoint_h5/checkpoint_195000.h5"
-# gpath 
-
-# seq_orig = one_hot(original_gene_sequence[:10500])
-
-# # print(tf.shape(seqs_init))
-
-# pred_orig = model(seq_orig) 
-
-
-wgan = tf.keras.models.load_model(gpath)
-
-"""
-Data:
-"""
-
-noise = tf.Variable(tf.random.normal(shape=[BATCH_SIZE,40]))
-
-tf.random.set_seed(25)
-
-np.random.seed(25)
-
-diffs = []
-init_exps = []
-
-opt_exps = []
-
-orig_vals = []
-
-# for i in range(50):
-    # print(f'Seq_n: {i}')
-# noise = tf.Variable(np.random.normal(size=[2, 40]))
-noise = tf.Variable(tf.random.normal(shape=[BATCH_SIZE,40]))
-# noise = tf.random.normal(shape=[BATCH_SIZE,40])
-noise_small = tf.random.normal(shape=[BATCH_SIZE,40],stddev=1e-5)
-
-optimizer = tf.keras.optimizers.Adam(learning_rate=3e-4)
-
-'''
-Original Gene Expression
-'''
-
-seqs_orig = one_hot([original_gene_sequence[:10500]])
-pred_orig = model(seqs_orig) 
-# tf.print(pred_orig)
-
-
-'''
-Optimization takes place here.
-'''
-
-
-
-bind_scores_list = []
-bind_scores_means = []
-sequences_list = []
-
-means = []
-maxes = []
-
-iters_ = []
-
-OPTIMIZE = True
-
-DNA_SEL = False
-
-sequences_init = wgan(noise)
-
-gen_seqs_init = sequences_init.numpy().astype('float')
-
-seqs_gen_init = recover_seq(gen_seqs_init, rev_rna_vocab)
-
-seqs_init = replace_seqs_coordinate(UTRLENGTH, original_gene_sequence, seqs_gen_init)
-
-print(np.shape(seqs_init))
-
-seqs_init = one_hot(seqs_init)
-
-print(tf.shape(seqs_init))
-
-pred_init = model(seqs_init) 
-
-t = tf.reshape(pred_init,(-1))
-
-init_t = t.numpy().astype('float')
-# sum_init = tf.reduce_max(t).numpy().astype('float')
-# sum_init = tf.math.argmax()
-
-if OPTIMIZE:
-    
-    iter_ = 0
-    for opt_iter in tqdm(range(3000)):
+    if gene_name == 'TLR6':
         
-        with tf.GradientTape() as gtape:
+        UTRSTARTS = [38856761,38829474,38843639]
+        UTRENDS = [38856817,38829537,38843791]
+        TSS = 38856817
 
-            gtape.watch(noise)
-            
-            sequences = wgan(noise)
+        STRAND = -1
+        CHR = 4
 
-            seqs_gen = recover_seq(sequences, rev_rna_vocab)
+        UTRSTART = UTRSTARTS[0]
+        UTREND = UTRENDS[0]
 
-            seqs2 = replace_seqs_coordinate(UTRLENGTH, original_gene_sequence, seqs_gen)
+        # IFNG
+        UTRSTART = 38856761
+        UTREND = 38856817
+
+        UTRLENGTH = UTREND - UTRSTART
+
+    elif gene_name == 'IFNG':
+
+        UTRSTARTS = [68159616]
+        UTRENDS = [68159740]
+        TSS = 68159740
+
+        STRAND = -1
+        CHR = 12
+
+        UTRSTART = UTRSTARTS[0]
+        UTREND = UTRENDS[0]
+
+        UTRLENGTH = UTREND - UTRSTART
+
+    elif gene_name == 'TNF':
+
+        # TNF
+        UTRSTARTS = [31575565]
+        UTRENDS = [31575741]
+        TSS = 31575565
+
+        STRAND = 1
+        CHR = 6
+
+        UTRSTART = UTRSTARTS[0]
+        UTREND = UTRENDS[0]
+
+        UTRLENGTH = UTREND - UTRSTART
+
+    elif gene_name == 'TP53':
         
-            seqs = one_hot(seqs2)
-            seqs = tf.convert_to_tensor(seqs,dtype=tf.float32)
+        # TNF
+        UTRSTARTS = [7687377,7676595]
+        UTRENDS = [7687487,7676622]
+        TSS = 7687487
 
-            # print(tf.shape(seqs))
+        STRAND = -1
+        CHR = 17
+
+        UTRSTART = UTRSTARTS[0] 
+        UTREND = UTRENDS[0]
+
+        UTRLENGTH = abs(UTREND - UTRSTART)
+
+
+    with open(path,'r') as f:
+        original_gene_sequence = f.readline()
+
+    print(original_gene_sequence)
+    print(len(original_gene_sequence))
+
+    gpath = "./../../models/checkpoint_50000.h5"
+
+    wgan = tf.keras.models.load_model(gpath)
+
+    """
+    Data:
+    """
+
+    noise = tf.Variable(tf.random.normal(shape=[BATCH_SIZE,40]))
+
+    tf.random.set_seed(25)
+
+    np.random.seed(25)
+
+    diffs = []
+    init_exps = []
+
+    opt_exps = []
+
+    orig_vals = []
+
+
+    noise = tf.Variable(tf.random.normal(shape=[BATCH_SIZE,40]))
+    noise_small = tf.random.normal(shape=[BATCH_SIZE,40],stddev=1e-5)
+
+    optimizer = tf.keras.optimizers.Adam(learning_rate=3e-4)
+
+    '''
+    Original Gene Expression
+    '''
+
+    seqs_orig = one_hot([original_gene_sequence[:10500]])
+    pred_orig = model(seqs_orig) 
+
+
+    '''
+    Optimization takes place here.
+    '''
+
+    bind_scores_list = []
+    bind_scores_means = []
+    sequences_list = []
+
+    means = []
+    maxes = []
+
+    iters_ = []
+
+    OPTIMIZE = True
+
+    DNA_SEL = False
+
+    sequences_init = wgan(noise)
+
+    gen_seqs_init = sequences_init.numpy().astype('float')
+
+    seqs_gen_init = recover_seq(gen_seqs_init, rev_rna_vocab)
+
+    seqs_init = replace_seqs_coordinate(UTRLENGTH, original_gene_sequence, seqs_gen_init)
+
+    seqs_init = one_hot(seqs_init)
+
+    pred_init = model(seqs_init) 
+
+    t = tf.reshape(pred_init,(-1))
+
+    init_t = t.numpy().astype('float')
+
+
+    if OPTIMIZE:
+        
+        iter_ = 0
+        for opt_iter in tqdm(range(3000)):
             
-            with tf.GradientTape() as ptape:
+            with tf.GradientTape() as gtape:
 
-                ptape.watch(seqs)
-
-                pred =  model(seqs)
-                t = tf.reshape(pred,(-1))
-                mx = np.amax(t.numpy().astype('float'),axis=0)
-                mx = np.max(mx)
+                gtape.watch(noise)
                 
-                sum_ = tf.reduce_sum(t)
-                # sum_ = tf.reduce_sum(sum_).numpy().astype('float')
-                maxes.append(mx)
-                means.append(sum_/BATCH_SIZE)
+                sequences = wgan(noise)
 
-            # tf.print(seqs)
-            # print(tf.shape(seqs))
-            # tf.print(pred)
-            # print(tf.shape(pred))
-            g1 = ptape.gradient(pred,seqs)
-            # tf.print(g1)
-            # print(tf.shape(g1))
-            g1_ = tf.math.scalar_mul(-1.0, g1)
+                seqs_gen = recover_seq(sequences, rev_rna_vocab)
+
+                seqs2 = replace_seqs_coordinate(UTRLENGTH, original_gene_sequence, seqs_gen)
             
-            g1 = tf.slice(g1_,[0,7000,0],[-1,128,-1])
-
-
-            tmp_g = g1.numpy().astype('float')
-            tmp_seqs = seqs_gen
-
-            tmp_lst = np.zeros(shape=(BATCH_SIZE,128,5))
-            for i in range(len(tmp_seqs)):
-                len_ = len(tmp_seqs[i])
+                seqs = one_hot(seqs2)
+                seqs = tf.convert_to_tensor(seqs,dtype=tf.float32)
                 
-                edited_g = tmp_g[i][:len_,:]
+                with tf.GradientTape() as ptape:
 
-                # print(np.reshape(edited_g[:4,:1],(-1)))
+                    ptape.watch(seqs)
+
+                    pred =  model(seqs)
+                    t = tf.reshape(pred,(-1))
+                    mx = np.amax(t.numpy().astype('float'),axis=0)
+                    mx = np.max(mx)
+                    
+                    sum_ = tf.reduce_sum(t)
+
+                    maxes.append(mx)
+                    means.append(sum_/BATCH_SIZE)
+
+
+                g1 = ptape.gradient(pred,seqs)
+
+                g1_ = tf.math.scalar_mul(-1.0, g1)
                 
-                # print(tf.reshape(tf.slice(g1_,[i,3500,0],[i,4,1]),(-1)).numpy().astype('float')[:4])
-
-                edited_g = np.pad(edited_g,((0,128-len_),(0,1)),'constant')   
-                
-                tmp_lst[i] = edited_g
-                
-
-            # g2 = tf.reshape(g1_,(4,-1))
-            # sum = tf.reduce_sum(g2,axis=1)
-            # tf.print(sum)
-            # f = g2.numpy()
-            # for item in f:
-            #     print(list(item[:-100]),sep='-')
-            #     break
-
-            # g1_ = tf.pad(g1_,paddings=[[0,0],[0,0],[0,1]])
-            g1 = tf.convert_to_tensor(tmp_lst,dtype=tf.float32)
-
-            g2 = gtape.gradient(sequences,noise,output_gradients=g1)
-            # x = tf.reshape(g2,(-1))
-            # sum = tf.reduce_sum(x)
-            # tf.print(sum)
-
-        a1 = g2 + noise_small
-        change = [(a1,noise)]
-        # a1 = a1.numpy().tolist()
-        # noise = noise.numpy().tolist()
-        optimizer.apply_gradients(change)
-
-        # noise = tf.convert_to_tensor(noise,dtype=tf.float32)
-
-        iters_.append(iter_)
-        iter_ += 1
-
-    sequences_opt = wgan(noise)
-
-    gen_seqs_opt = sequences_opt.numpy().astype('float')
-
-    seqs_gen_opt = recover_seq(gen_seqs_opt, rev_rna_vocab)
-
-    seqs_opt= replace_seqs_coordinate(UTRLENGTH, original_gene_sequence, seqs_gen_opt)
-
-    seqs_opt = one_hot(seqs_opt)
-
-    pred_opt = model(seqs_opt)
-
-    t = tf.reshape(pred_opt,(-1))
-    opt_t = t.numpy().astype('float')
-    # sum_opt = tf.reduce_sum(t).numpy().astype('float')
-
-    # print(type(t_orig))
-    # print(t_orig)
+                g1 = tf.slice(g1_,[0,7000,0],[-1,128,-1])
 
 
+                tmp_g = g1.numpy().astype('float')
+                tmp_seqs = seqs_gen
 
-# gen_seqs = wgan(noise)
+                tmp_lst = np.zeros(shape=(BATCH_SIZE,128,5))
+                for i in range(len(tmp_seqs)):
+                    len_ = len(tmp_seqs[i])
+                    
+                    edited_g = tmp_g[i][:len_,:]
+                    edited_g = np.pad(edited_g,((0,128-len_),(0,1)),'constant')   
+                    
+                    tmp_lst[i] = edited_g
+                    
+                g1 = tf.convert_to_tensor(tmp_lst,dtype=tf.float32)
 
-# gen_seqs_max = gen_seqs.numpy().astype('float')
-
-# gen_seqs_max = gen_seqs_max[max_indices]
-
-# seqs_gen = utils.recover_seq(gen_seqs, rev_rna_vocab)
-
-# seqs2, origs = replace_xpresso_seqs_test(seqs_gen,df,test_refs,test_indices)
-
-# seqs = one_hot(seqs2)
-
-# pred =  model(seqs)
-
-# sequences_init = sequences_init.numpy().astype('float')
-
-# sequences_init = sequences_init[max_indices]
-
-# seqs_gen_initial = utils.recover_seq(sequences_init, rev_rna_vocab)
-
-# # seqs_gen = utils.recover_seq(sequences, rev_rna_vocab)
-
-# seqs_initial, origs_test = replace_xpresso_seqs_test(seqs_gen_initial,df,test_refs,test_indices)
-
-# seqs_initial = one_hot(seqs_initial)
-
-# pred_initial =  model(seqs_initial)
-
-# print('Initial Exp: {}'.format(np.average(pred)))
-
-# print('Optimized Exp: {}'.format(np.average(pred_initial)))
-
-with open('init_exps_'+gene_name+'.npy', 'wb') as f:
-    np.save(f, init_t)
-
-with open('opt_exps_'+gene_name+'.npy', 'wb') as f:
-    np.save(f, opt_t)
-
-with open('seqs_'+gene_name+'.npy', 'wb') as f:
-    np.save(f, seqs_gen_opt)
-
-# with open('inits.npy', 'wb') as f:
-#     np.save(f, sequences_init)
+                g2 = gtape.gradient(sequences,noise,output_gradients=g1)
 
 
-# plt.scatter(iters_,maxes)
-# plt.plot(iters_, maxes, '-o')
-# plt.xlabel('Epoch')
-# plt.ylabel('Avg. log TPM Exp.')
+            a1 = g2 + noise_small
+            change = [(a1,noise)]
 
-# plt.savefig('maxes.png')
+            optimizer.apply_gradients(change)
 
-# plt.clf()
+            iters_.append(iter_)
+            iter_ += 1
 
-# plt.plot(iters_, means, '-o')
-# plt.xlabel('Epoch')
-# plt.ylabel('Avg. log TPM Exp.')
+        sequences_opt = wgan(noise)
 
-# plt.savefig('means.png')
+        gen_seqs_opt = sequences_opt.numpy().astype('float')
 
-inits = init_t
-opts = opt_t
+        seqs_gen_opt = recover_seq(gen_seqs_opt, rev_rna_vocab)
 
-print(np.max(inits))
-print(np.min(inits))
+        seqs_opt= replace_seqs_coordinate(UTRLENGTH, original_gene_sequence, seqs_gen_opt)
 
-print(np.max(opts))
-print(np.min(opts))
+        seqs_opt = one_hot(seqs_opt)
 
-diffs = opts - inits
+        pred_opt = model(seqs_opt)
 
-print(np.mean(diffs))
+        t = tf.reshape(pred_opt,(-1))
+        opt_t = t.numpy().astype('float')
 
-positives = []
-negatives = []
 
-positive_inits = []
-negative_inits = []
+    with open('init_exps_'+gene_name+'.npy', 'wb') as f:
+        np.save(f, init_t)
 
-for i in range(len(diffs)):
-    if diffs[i] >= 0:
-        positive_inits.append(abs(inits[i]))
-        positives.append(diffs[i])
-    if diffs[i] < 0:
-        negative_inits.append(abs(inits[i]))
-        negatives.append(diffs[i])
+    with open('opt_exps_'+gene_name+'.npy', 'wb') as f:
+        np.save(f, opt_t)
 
-print(np.mean(positives))
-print(np.mean(negatives))
-print(len(positives))
-print(len(negatives))
-print(np.mean(np.divide(positives,positive_inits)))
-print(np.mean(np.divide(negatives,negative_inits)))
-print(np.mean(positive_inits))
-print(np.mean(negative_inits))
-print(np.max(diffs))
-print("Original Expression :")
-print(np.power(10,pred_orig.numpy().astype('float')))
-print("Max Optimized Expression :")
-print(np.power(10,max(opts)))
-print("Percentage Increase :")
-print((max(opts)-pred_orig.numpy().astype('float'))/pred_orig.numpy().astype('float'))
+    with open('seqs_'+gene_name+'.npy', 'wb') as f:
+        np.save(f, seqs_gen_opt)
+

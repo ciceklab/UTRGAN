@@ -1,11 +1,7 @@
 # UTRGAN
 
 
-
-
-
 # Learning to Generate 5' UTR Sequences for Optimized Ribosome Load and Gene Expression
-
 
 
 
@@ -93,7 +89,7 @@ $ python ./src/gan/wgan.py
 - The CSV file including the UTR samples. The default path used is './data/utrs.csv'.
 
 ##### -lr, --learning_rate
-- The learning rate of the Adam optimizer used to optimize the model parameters. The default value is 3e-5. 
+- The learning rate of the Adam optimizer used to optimize the model parameters. The default value is 1e-5. If 4 is provided, the learning rate will be 1e-4.
 
 ##### -mil, --min_length
 - Minimum length of the UTRs used for training the model. Default: 64.
@@ -165,7 +161,7 @@ $ python ./src/mrl_optimization/optimize_variable_length.py
 - The learning rate of the Adam optimizer used to optimize the model parameters. The default value is 3e-5. 
 
 ##### -uc, --utr_count
-- The number of 5' UTR optimized per DNA. Default: 128.
+- The number of 5' UTR optimized. Default: 128.
 
 ## Usage Examples
 
