@@ -29,7 +29,7 @@ np.random.seed(25)
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('-gp', type=str, required=True, default='./../../data/reference_gene_info.npy')
+parser.add_argument('-gp', type=str, required=True, default='./../../data/gene_info.txt')
 parser.add_argument('-seqs', type=str, required=True,default='./../../data/seqs.npy')
 parser.add_argument('-dc', type=str, required=False, default=32)
 parser.add_argument('-uc', type=int, required=False ,default=32)
@@ -178,15 +178,23 @@ def gen_random_dna(len=10500,size=64):
 
 
     return dnas
+
+def read_genes(file_name):
+    with open(file_name) as f:
+        lines = f.readlines()
+
+    lines = [lines[i].replace('\n','') for i in range(len(lines))]
+
+    return np.array(lines)
     
-def select_dna_single(fname='small_seqs.npy',batch_size=64):
-    refs = np.load(fname)
+def select_dna_single(fname='./../../data/genes.txt',batch_size=64):
+    refs = read_genes(fname)
     indice = random.sample(range(0,refs.shape[0]),1)
     refs = refs
     return indice[0], refs    
 
-def select_dna_batch(fname='small_seqs.npy',batch_size=64,dna_batch=32):
-    refs = np.load(fname)
+def select_dna_batch(fname='./../../data/genes.txt',batch_size=64,dna_batch=32):
+    refs = read_genes(fname)
     indice = random.sample(range(0,refs.shape[0]),batch_size*dna_batch)
     refs = refs
     return indice, refs
@@ -256,7 +264,7 @@ if __name__ == '__main__':
 
     logdir, checkpoint_baseline = log(samples_dir=True)
 
-    df = parse_biomart()
+    df = parse_biomart(args.gp)
 
     df = df[:8200]
 
@@ -327,7 +335,7 @@ if __name__ == '__main__':
 
     if OPTIMIZE:
 
-        indices, refs = select_dna_batch(fname='small_seqs.npy',batch_size=BATCH_SIZE,dna_batch=SEQ_BATCH)
+        indices, refs = select_dna_batch(fname='./../../data/genes.txt',batch_size=BATCH_SIZE,dna_batch=SEQ_BATCH)
         
         iter_ = 0
         for opt_iter in tqdm(range(3000)):
