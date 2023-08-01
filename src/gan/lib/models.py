@@ -10,7 +10,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.regularizers import l2
 
-from tensorflow.keras.initializers import random_uniform
+from tensorflow.keras.initializers import RandomUniform
 
 import tensorflow.keras.backend as K
 
@@ -43,7 +43,7 @@ def resnet_g2(dim, num_channels, seq_len, vocab_size, annotated=False, res_layer
   for layer in range(res_layers):
     x = resblock2(x,num_channels)
 
-  x = Conv1D(vocab_size,1,padding='same',kernel_regularizer=l2(0.01),bias_regularizer=l2(0.01))(x)
+  x = Conv1D(vocab_size,1,padding='same', kernel_regularizer=l2(0.01),bias_regularizer=l2(0.01))(x)
 
   x = Softmax()(x)
   # print(x.shape)

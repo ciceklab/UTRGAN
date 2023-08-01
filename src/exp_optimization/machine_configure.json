@@ -1,0 +1,6 @@
+{
+"script_dir": "/home/sina/UTR/git/UTRGAN/src/exp_optimization/script",
+"data_dir": "/home/sina/UTR/git/UTRGAN/src/exp_optimization/script/data",
+"log_dir": "/home/sina/UTR/git/UTRGAN/src/exp_optimization/script/log",
+"pth_dir": "/home/sina/UTR/git/UTRGAN/src/exp_optimization/script/checkpoint"
+}

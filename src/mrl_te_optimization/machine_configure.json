@@ -1,0 +1,6 @@
+{
+"script_dir": "/home/sina/UTR/optimization/mrl/script",
+"data_dir": "/home/sina/UTR/optimization/mrl/script/data",
+"log_dir": "/home/sina/UTR/optimization/mrl/script/log",
+"pth_dir": "/home/sina/UTR/optimization/mrl/script/checkpoint"
+}

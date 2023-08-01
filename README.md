@@ -1,23 +1,18 @@
 # UTRGAN
 
 
-# Learning to Generate 5' UTR Sequences for Optimized Ribosome Load and Gene Expression
+# UTRGAN: Learning to Generate 5' UTR Sequences for Optimized Translation Efficiency and Gene Expression
 
 
 
-> UTRGAN is a is a deep learning based model for novel 5' UTR generation and optimziation. We use the WGAN-GP architecture for the generative model, and the Xpresso and FramePool models for optimizing the TPM expression and Mean Ribosome Load (MRL), respectively.
+> UTRGAN is a is a deep learning based model for novel 5' UTR generation and optimziation. We use the WGAN-GP architecture for the generative model, and the Xpresso, FramePool, and MTtrans models for optimizing the TPM expression, Mean Ribosome Load (MRL), and Translation Efficiency (TE), respectively.
 
-> <a href="https://en.wikipedia.org/wiki/Deep_learning" target="_blank">**Deep Learning**</a>,<a href="https://arxiv.org/pdf/1704.00028v3.pdf" target="_blank">**WGAN-GP**</a>, <a href="https://github.com/vagarwal87/Xpresso" target="_blank">**Xpresso**</a>, <a href="https://github.com/Karollus/5UTR" target="_blank">**FramePool**</a>
+> <a href="https://en.wikipedia.org/wiki/Deep_learning" target="_blank">**Deep Learning**</a>,<a href="https://arxiv.org/pdf/1704.00028v3.pdf" target="_blank">**WGAN-GP**</a>, <a href="https://github.com/vagarwal87/Xpresso" target="_blank">**Xpresso**</a>, <a href="https://github.com/Karollus/5UTR" target="_blank">**FramePool**</a>.<a href="https://github.com/holab-hku/MTtrans" target="_blank">**MTtrans**</a>
 
-> Diagram of the generative model (WGAN)
-
-<p align="center">
-<img src="./wgan.png"   class="center"><br>
-
-> Diagram of the optimization procedure for ribosome load and gene expression
+> Diagram of the generative model (WGAN) and the optimization procedure
 
 <p align="center">
-<img src="./optimization.png"   class="center"><br>
+<img src="./pipeline.png"   class="center"><br>
 
 ---
 
@@ -59,8 +54,8 @@ Sina Barazandeh, Furkan Ozden, Ahmet Hincer, Urartu Ozgur Safak Seker, A. Ercume
 For easy requirement handling, you can use utrgan.yml files to initialize conda environment with requirements installed:
 
 ```shell
-$ conda env create --name utrgan_env -f UTRGAN_environment.yml
-$ conda activate utrgan_env
+$ conda env create --name utrgan -f utrgan.yml
+$ conda activate utrgan
 ```
 
 Note that the provided environment yml file is for Linux systems. For MacOS users, the corresponding versions of the packages might need to be changed.
@@ -72,7 +67,7 @@ Note that the provided environment yml file is for Linux systems. For MacOS user
 
 
 ## Instructions Manual
-Important notice: Please call the wgan.py script from the ./src/gan directory. The optimization scripts for gene expression and MRL are in the ./src/gene_optimization and ./src/mrl_optimization directories, respectively. To analyze the generated seqeunces use the ./src/analysis/analyze.py script.
+Important notice: Please call the wgan.py script from the ./src/gan directory. The optimization scripts for gene expression and MRL/TE are in the ./src/exp_optimization and ./src/mrl_te_optimization directories, respectively. To analyze the generated seqeunces use the ./src/analysis/violin_dists.py script.
 
 ### Train teh GAN modes:
 
@@ -109,7 +104,7 @@ $ python ./src/gan/wgan.py
 ### Optimize a single gene for optimization:
 
 ```shell
-$ python ./src/gene_optimization/single_gene.py
+$ python ./src/exp_optimization/single_gene.py
 ```
 
 #### Required Arguments
@@ -132,7 +127,7 @@ $ python ./src/gene_optimization/single_gene.py
 ### Optimize multiple genes for optimization:
 
 ```shell
-$ python ./src/gene_optimization/multiple_genes.py
+$ python ./src/exp_optimization/multiple_genes.py
 ```
 
 #### Required Arguments
@@ -149,16 +144,36 @@ $ python ./src/gene_optimization/multiple_genes.py
 ##### -uc, --utr_count
 - The number of 5' UTR optimized per DNA. Default: 128.
 
+### Joint optimization of translation efficiency and gene expression:
+
+```shell
+$ python ./src/exp_optimization/joint_opt.py
+```
+
+#### Required Arguments
+
+##### -gp, --gene_path
+- The path to a fasta file including the set of genes
+
+##### -lr, --learning_rate
+- The learning rate of the Adam optimizer used to optimize the model parameters. The default value is 3e-5. 
+- 
+##### -uc, --utr_count
+- The number of 5' UTR optimized per DNA. Default: 128.
+
 ### Optimize multiple UTRs for high MRL:
 
 ```shell
-$ python ./src/mrl_optimization/optimize_variable_length.py
+$ python ./src/mrl_te_optimization/optimize_variable_length.py
 ```
 
 #### Required Arguments
 
 ##### -lr, --learning_rate
 - The learning rate of the Adam optimizer used to optimize the model parameters. The default value is 3e-5. 
+
+##### -opt, --optimization_model
+- Either TE or MRL
 
 ##### -uc, --utr_count
 - The number of 5' UTR optimized. Default: 128.
@@ -187,8 +202,8 @@ $ bash Anaconda3-version.num-Linux-x86_64.sh
 - Please run the following lines to create and activate the environment:
 
 ```shell
-$ conda env create --name utrgan_env -f UTRGAN_environment.yml
-$ conda activate utrgan_env
+$ conda env create --name utrgan -f utrgan.yml
+$ conda activate utrgan
 ```
 
 ## Citations
