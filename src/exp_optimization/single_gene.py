@@ -30,12 +30,25 @@ import utils as util_motif
 
 tf.compat.v1.enable_eager_execution()
 
-# os.environ['CUDA_VISIBLE_DEVICES'] = '5'
+parser = argparse.ArgumentParser()
+parser.add_argument('-d', type=str, required=False ,default='./../../data/utrdb2.csv') 
+parser.add_argument('-bc', type=int, required=False ,default=64)
+parser.add_argument('-g', type=str, required=False ,default='IFNG')
+parser.add_argument('-gc', type=int, required=False ,default=-1)
+parser.add_argument('-lr', type=int, required=False ,default=1)
+parser.add_argument('-gpu', type=str, required=False ,default='-1')
+parser.add_argument('-s', type=int, required=False ,default=1000)
+args = parser.parse_args()
 
-colors = []
+if args.gpu == '-1':
+    device = 'cpu'
+else:
+    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
+    device = 'cuda'
+    if args.gpu.includes(','):
+        device = 'cuda:1'
 
-
-BATCH_SIZE = 64
+BATCH_SIZE = args.bc
 DIM = 40
 SEQ_LEN = 128
 gpath = './../../models/checkpoint_3000.h5'
@@ -46,7 +59,7 @@ tpath = './scripts/checkpoint/RL_hard_share_MTL/3R/schedule_MTL-model_best_cv1.p
 # exp_path = '/home/sina/UTR/models/GM12878_trainepoch.06-0.5062.h5'
 
 CELL_LINE = ''
-CELL_LINE = 'K562_'
+# CELL_LINE = 'K562_'
 # CELL_LINE = 'GM12878_'
 
 def fetch_seq(start, end, chr, strand):
@@ -293,12 +306,6 @@ if __name__ == "__main__":
 
     model = convert_model(model)
 
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument('-g', type=str, required=True)
-
-    args = parser.parse_args()
-
     gene_name = args.g
 
     if gene_name == 'TLR6':
@@ -365,7 +372,7 @@ if __name__ == "__main__":
 
     # original_gene_sequence = fetch_seq(start=TSS-7000,end=TSS+3500 + 128,chr=CHR,strand=STRAND)
 
-    with open(gene_name+'.txt','r') as f:
+    with open(f'./genes/{gene_name}.txt','r') as f:
         original_gene_sequence = f.readline()
 
     print(original_gene_sequence)
@@ -447,11 +454,11 @@ if __name__ == "__main__":
     # sum_init = tf.math.argmax()
 
     mrl_model = load_framepool()
-    te_model = torch.load(tpath,map_location=torch.device('cuda:1'))['state_dict']  
-    te_model.train().to('cuda:1')
+    te_model = torch.load(tpath,map_location=torch.device(device))['state_dict']  
+    te_model.train().to(device)
 
     seqs_mrl = tf.convert_to_tensor(np.array([encode_seq_framepool(seq) for seq in seqs_gen_init]),dtype=tf.float32)
-    seqs_te =  torch.transpose(torch.tensor(np.array(one_hot_all_motif(seqs_gen_init),dtype=np.float32)),2,1).float().to('cuda:1')
+    seqs_te =  torch.transpose(torch.tensor(np.array(one_hot_all_motif(seqs_gen_init),dtype=np.float32)),2,1).float().to(device)
 
     mrl_preds_init = mrl_model(seqs_mrl).numpy().astype('float')
     te_preds_init = te_model.forward(seqs_te).cpu().data.numpy()
@@ -466,6 +473,10 @@ if __name__ == "__main__":
 
     GC_CONTROL = False
     GC_Limit = 0.65
+
+    if args.gc > 0:
+        GC_CONTROL = True
+        GC_Limit = args.gc
 
     if OPTIMIZE:
         
@@ -557,7 +568,7 @@ if __name__ == "__main__":
 
 
         seqs_mrl = tf.convert_to_tensor(np.array([encode_seq_framepool(seq) for seq in seqs_gen_opt]),dtype=tf.float32)
-        seqs_te =  torch.transpose(torch.tensor(np.array(one_hot_all_motif(seqs_gen_opt),dtype=np.float32)),2,1).float().to('cuda:1')
+        seqs_te =  torch.transpose(torch.tensor(np.array(one_hot_all_motif(seqs_gen_opt),dtype=np.float32)),2,1).float().to(device)
 
         mrl_preds_opt = mrl_model(seqs_mrl).numpy().astype('float')
         te_preds_opt = te_model.forward(seqs_te).cpu().data.numpy()
@@ -600,12 +611,6 @@ if __name__ == "__main__":
         print(np.average(init_t))
         print(np.average(opt_t))
 
-        x = [i for i in range(int(STEPS))]
-        plt.plot(x, means)
-        plt.savefig('means.png')
-        plt.clf()
-        plt.plot(x, maxes)
-        plt.savefig('maxes.png')
         print("MRL:")
         print(np.average(mrl_preds_init))
         print(np.average(mrl_preds_opt))

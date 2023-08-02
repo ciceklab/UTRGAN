@@ -30,21 +30,30 @@ import utils as util_motif
 
 tf.compat.v1.enable_eager_execution()
 
-# os.environ['CUDA_VISIBLE_DEVICES'] = '5'
+parser = argparse.ArgumentParser()
+parser.add_argument('-d', type=str, required=False ,default='./../../data/utrdb2.csv') 
+parser.add_argument('-bc', type=int, required=False ,default=64)
+parser.add_argument('-g', type=str, required=False ,default='IFNG')
+parser.add_argument('-lr', type=int, required=False ,default=1)
+parser.add_argument('-gpu', type=str, required=False ,default='-1')
+parser.add_argument('-s', type=int, required=False ,default=1000)
+args = parser.parse_args()
 
+if args.gpu == '-1':
+    device = 'cpu'
+else:
+    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
+    device = 'cuda'
+    if args.gpu.includes(','):
+        device = 'cuda:1'
 
-
-
-BATCH_SIZE = 64
+BATCH_SIZE = args.bc
 DIM = 40
 SEQ_LEN = 128
 MAX_LEN = SEQ_LEN
-gpath = '/home/sina/UTR/gan/logs/2023.07.21-22h39m31s_neo_july22_g5c5_d40_u128_utrdb2/checkpoint_h5/checkpoint_500.h5'
-mrl_path = '/home/sina/UTR/models/utr_model_combined_residual_new.h5'
 
-
-tpath = '/home/sina/UTR/MTtrans/checkpoint/RL_hard_share_MTL/3R/schedule_MTL-model_best_cv1.pth'
-# tpath = '/home/sina/UTR/MTtrans/checkpoint/RL_hard_share_MTL/3M/schedule_lr-model_best_cv1.pth'
+gpath = './../../models/checkpoint_3000.h5'
+tpath = './scripts/checkpoint/RL_hard_share_MTL/3R/schedule_MTL-model_best_cv1.pth'
 
 
 def fetch_seq(start, end, chr, strand):
@@ -297,12 +306,6 @@ if __name__ == "__main__":
 
     model = convert_model(model)
 
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument('-g', type=str, required=True)
-
-    args = parser.parse_args()
-
     gene_name = args.g
 
     wgan = tf.keras.models.load_model(gpath)
@@ -383,7 +386,7 @@ if __name__ == "__main__":
 
     # original_gene_sequence = fetch_seq(start=TSS-7000,end=TSS+3500 + 128,chr=CHR,strand=STRAND)
 
-    with open(gene_name+'.txt','r') as f:
+    with open(f'./genes/{gene_name}.txt','r') as f:
         original_gene_sequence = f.readline()
 
     seqs_orig = one_hot([original_gene_sequence[:10500]])
@@ -391,8 +394,8 @@ if __name__ == "__main__":
 
     ################ MRL/TE Optimization ######################
     mrl_model = load_framepool()
-    te_model = torch.load(tpath,map_location=torch.device('cuda:1'))['state_dict']  
-    te_model.train().to('cuda:1')
+    te_model = torch.load(tpath,map_location=torch.device(device))['state_dict']  
+    te_model.train().to(device)
     
     
     MODEL = "TE"
@@ -438,7 +441,7 @@ if __name__ == "__main__":
         one_hots = one_hot_all_motif(np.array(seqs_gen_init))
         seqs = torch.tensor(one_hots,dtype=torch.double)
         seqs = torch.transpose(seqs, 1, 2)
-        seqs = seqs.float().to('cuda:1')
+        seqs = seqs.float().to(device)
         pred_init = opt_model.forward(seqs)
         pred_init = torch.flatten(pred_init)
 
@@ -462,7 +465,7 @@ if __name__ == "__main__":
 
     optimizer = tf.keras.optimizers.Adam(learning_rate=1e-1)
 
-    STEPS = 1000
+    STEPS = args.s
 
     if OPTIMIZE:
         iter_ = 0
@@ -526,7 +529,7 @@ if __name__ == "__main__":
                     
                     seqs = torch.transpose(seqs, 1, 2)
                     seqs = seqs.float()
-                    seqs = torch.tensor(seqs.to('cuda:1'), requires_grad=True)
+                    seqs = torch.tensor(seqs.to(device), requires_grad=True)
                     pred = opt_model.forward(seqs)
                     pred = torch.flatten(pred)
                     predicted_mrls.append(np.average(pred.cpu().detach().numpy()))
@@ -588,7 +591,7 @@ if __name__ == "__main__":
             # print(np.shape(one_hots))
             seqs = torch.tensor(one_hots,dtype=torch.double)
             seqs = torch.transpose(seqs, 1, 2)
-            seqs = seqs.float().to('cuda:1')
+            seqs = seqs.float().to(device)
             preds_opt = opt_model.forward(seqs)
             
             preds_opt = preds_opt.cpu().data.numpy()
@@ -597,6 +600,7 @@ if __name__ == "__main__":
 
         opt_mrl = np.mean(preds_opt)
 
+    print("Frist Step:")
     print(f"Average Initial:{np.mean(preds_init)}")
     print(f"Max Initial:{np.amax(preds_init)}")
     print(f"Average Opt:{np.mean(preds_opt)}")
@@ -661,7 +665,7 @@ if __name__ == "__main__":
     intermediate_pred = intermediate_pred.numpy().astype('float')
 
     seqs_mrl = tf.convert_to_tensor(np.array([encode_seq_framepool(seq) for seq in seqs_gen_init]),dtype=tf.float32)
-    seqs_te =  torch.transpose(torch.tensor(np.array(one_hot_all_motif(seqs_gen_init),dtype=np.float32)),2,1).float().to('cuda:1')
+    seqs_te =  torch.transpose(torch.tensor(np.array(one_hot_all_motif(seqs_gen_init),dtype=np.float32)),2,1).float().to(device)
 
     mrl_preds_init = mrl_model(seqs_mrl).numpy().astype('float')
     te_preds_init = te_model.forward(seqs_te).cpu().data.numpy()
@@ -669,7 +673,7 @@ if __name__ == "__main__":
     means = []
     maxes = []
     
-    STEPS = 1000
+    STEPS = args.s
 
     seqs_collection = []
     scores_collection = []
@@ -756,7 +760,7 @@ if __name__ == "__main__":
 
 
         seqs_mrl = tf.convert_to_tensor(np.array([encode_seq_framepool(seq) for seq in seqs_gen_opt]),dtype=tf.float32)
-        seqs_te =  torch.transpose(torch.tensor(np.array(one_hot_all_motif(seqs_gen_opt),dtype=np.float32)),2,1).float().to('cuda:1')
+        seqs_te =  torch.transpose(torch.tensor(np.array(one_hot_all_motif(seqs_gen_opt),dtype=np.float32)),2,1).float().to(device)
 
         mrl_preds_opt = mrl_model(seqs_mrl).numpy().astype('float')
         te_preds_opt = te_model.forward(seqs_te).cpu().data.numpy()
@@ -764,33 +768,26 @@ if __name__ == "__main__":
         best_seqs, best_scores = select_best(scores_collection, seqs_collection)
 
 
-        with open('./outputs_mixed/init_exps_'+gene_name+'.txt', 'w') as f:
+        with open('./outputs_joint/init_exps_'+gene_name+'.txt', 'w') as f:
             for item in init_t:
                 f.write(f'{item}\n')
 
-        with open('./outputs_mixed/opt_exps_'+gene_name+'.txt', 'w') as f:
+        with open('./outputs_joint/opt_exps_'+gene_name+'.txt', 'w') as f:
             for item in opt_t:
                 f.write(f'{item}\n')
 
-        with open('./outputs_mixed/best_seqs_'+gene_name+'.txt', 'w') as f:
+        with open('./outputs_joint/best_seqs_'+gene_name+'.txt', 'w') as f:
             for item in seqs_gen_opt:
                 f.write(f'{item}\n')
 
-        with open('./outputs_mixed/init_seqs_'+gene_name+'.txt', 'w') as f:
+        with open('./outputs_joint/init_seqs_'+gene_name+'.txt', 'w') as f:
             for item in seqs_gen_init:
                 f.write(f'{item}\n')
 
-
+        print("Second Step:")
         print(np.mean(init_t))
         print(np.mean(intermediate_pred))
         print(np.mean(opt_t))
-
-        x = [i for i in range(int(STEPS))]
-        plt.plot(x, means)
-        plt.savefig('means.png')
-        plt.clf()
-        plt.plot(x, maxes)
-        plt.savefig('maxes.png')
         print("MRL:")
         print(np.average(mrl_preds_init))
         print(np.average(mrl_preds_opt))

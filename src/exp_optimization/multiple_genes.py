@@ -11,11 +11,6 @@ import sys
 sys.path.append('/home/sina/ml/gan/dev/shot0')
 sys.path.insert(0, '/home/sina/ml/gan/dev/shot0/lib')
 import argparse
-import socket
-import datetime
-import random
-import os
-import matplotlib.pyplot as plt
 from util import *
 from framepool import *
 
@@ -24,31 +19,30 @@ tf.compat.v1.enable_eager_execution()
 from Bio import SeqIO
 import pandas as pd
 import numpy as np
-# from BCBio import GFF
 import requests, sys
 from popen import Auto_popen
 
-import scipy.stats as stats
 abs_path = '/home/sina/UTR/optimization/mrl/log/Backbone/RL_hard_share/3M/small_repective_filed_strides1113.ini'
 Configuration = Auto_popen(abs_path)
-import utils as util_motif
 
 np.random.seed(25)
 
 parser = argparse.ArgumentParser()
-
-parser.add_argument('-gp', type=str, required=False, default='/home/sina/UTR/data/gene_info.txt')
-parser.add_argument('-seqs', type=str, required=False,default='/home/sina/UTR/data/genes.txt')
-parser.add_argument('-dc', type=str, required=False, default=16)
-parser.add_argument('-uc', type=int, required=False ,default=16)
-parser.add_argument('-lr', type=int, required=False ,default=5)
+parser.add_argument('-bc', type=int, required=False ,default=64)
+parser.add_argument('-lr', type=int, required=False ,default=1)
 parser.add_argument('-gpu', type=str, required=False ,default='-1')
-
+parser.add_argument('-s', type=int, required=False ,default=3000)
 args = parser.parse_args()
 
-# os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
+if args.gpu == '-1':
+    device = 'cpu'
+else:
+    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
+    device = 'cuda'
+    if args.gpu.includes(','):
+        device = 'cuda:1'
 
-BATCH_SIZE = 100
+BATCH_SIZE = args.bc
 SEQ_BATCH = 8
 UTR_LEN = 128
 DIM = 40
@@ -187,13 +181,13 @@ def read_genes(file_name):
 
     return np.array(lines)
     
-def select_dna_single(fname='/home/sina/UTR/data/genes.txt',batch_size=64):
+def select_dna_single(fname='./../../data/genes.txt',batch_size=64):
     refs = read_genes(fname)
     indice = random.sample(range(0,refs.shape[0]),1)
     refs = refs
     return indice[0], refs    
 
-def select_dna_batch(fname='/home/sina/UTR/data/genes.txt',dna_batch=32):
+def select_dna_batch(fname='./../../data/genes.txt',dna_batch=32):
     refs = read_genes(fname)
     indices = random.sample(range(0,refs.shape[0]),dna_batch)
     refs = refs
@@ -272,8 +266,9 @@ def select_best(scores, seqs, gc_control=False, GC=-1):
 
 if __name__ == '__main__':
 
-    df = parse_biomart('/home/sina/UTR/data/gene_info.txt')
+    df = parse_biomart('./../../data/gene_info.txt')
 
+    # Genes retreived from Ensemble
     df = df[:8200]
 
     model = tf.keras.models.load_model(exp_path)
@@ -318,7 +313,7 @@ if __name__ == '__main__':
     OPTIMIZE = True
 
     DNA_SEL = False
-    indices, refs = select_dna_batch(fname=args.seqs,dna_batch=SEQ_BATCH)
+    indices, refs = select_dna_batch(dna_batch=SEQ_BATCH)
 
     sequences_init = wgan(noise)
 
@@ -328,11 +323,8 @@ if __name__ == '__main__':
 
     seqs_init, origs = replace_xpresso_seqs_single_v2(seqs_gen_init,df,refs,indices)
 
-    # print(tf.shape(seqs_init))
-
     seqs_init = one_hot(seqs_init)
 
-    # print(tf.shape(seqs_init))
 
     pred_init = model(seqs_init) 
 
@@ -346,36 +338,28 @@ if __name__ == '__main__':
 
     init_t = init_t.numpy().astype('float')
 
-
-
-    # init_t = np.reshape(init_t,(BATCH_SIZE,-1))
-
-
-        
-
     mrl_model = load_framepool()
-    te_model = torch.load(tpath,map_location=torch.device('cuda:1'))['state_dict']      
-    te_model.train().to('cuda:1')
+    te_model = torch.load(tpath,map_location=torch.device(device))['state_dict']      
+    te_model.train().to(device)
 
 
 
     ########### MRL and TE check before optimization ###################
 
     seqs_mrl = tf.convert_to_tensor(np.array([encode_seq_framepool(seq) for seq in seqs_gen_init]),dtype=tf.float32)
-    seqs_te =  torch.transpose(torch.tensor(np.array(one_hot_all_motif(seqs_gen_init),dtype=np.float32)),2,1).float().to('cuda:1')
+    seqs_te =  torch.transpose(torch.tensor(np.array(one_hot_all_motif(seqs_gen_init),dtype=np.float32)),2,1).float().to(device)
 
     mrl_preds_init = mrl_model(seqs_mrl).numpy().astype('float')
     te_preds_init = te_model.forward(seqs_te).cpu().data.numpy()
 
     ####################################################################
 
-    STEPS = 1000
+    STEPS = args.s
 
     seqs_collection = []
     scores_collection = []
     if OPTIMIZE:
 
-        # indices, refs = select_dna_batch(fname=args.seqs,dna_batch=SEQ_BATCH)
         
         iter_ = 0
         for opt_iter in tqdm(range(STEPS)):
@@ -411,9 +395,7 @@ if __name__ == '__main__':
                         
 
                         scores_collection_temp.append(t.numpy().astype('float'))
-                        # print(sum_.numpy().astype('float'))
                         nt = t.numpy().astype('float')
-                        # print(tf.shape(sum_))
                         maxes_temp.append(mx)
                         means_temp.append(np.sum(t)/BATCH_SIZE)
 
@@ -434,8 +416,6 @@ if __name__ == '__main__':
                     g1 = tf.convert_to_tensor(tmp_lst,dtype=tf.float32)
 
                     g1_ = tf.math.add(g1, g1_)
-
-                # print(np.shape(scores_collection_temp))
 
                 scores_collection.append(np.mean(scores_collection_temp,axis=0)/BATCH_SIZE)
                 means.append(np.mean(means_temp))
@@ -470,12 +450,10 @@ if __name__ == '__main__':
         t = tf.reduce_mean(pred_opt,axis=0)
         opt_t = t.numpy().astype('float')
 
-        # print(t)
-
     ########### MRL and TE check after optimization ####################
 
     seqs_mrl = tf.convert_to_tensor(np.array([encode_seq_framepool(seq) for seq in seqs_gen_opt]),dtype=tf.float32)
-    seqs_te =  torch.transpose(torch.tensor(np.array(one_hot_all_motif(seqs_gen_opt),dtype=np.float32)),2,1).float().to('cuda:1')
+    seqs_te =  torch.transpose(torch.tensor(np.array(one_hot_all_motif(seqs_gen_opt),dtype=np.float32)),2,1).float().to(device)
 
     mrl_preds_opt = mrl_model(seqs_mrl).numpy().astype('float')
     te_preds_opt = te_model.forward(seqs_te).cpu().data.numpy()
@@ -505,10 +483,10 @@ if __name__ == '__main__':
             f.write(f'{item}\n')
 
 
+
+
     print(np.average(init_t))
     print(np.average(opt_t))
-
-
     print("MRL:")
     print(np.average(mrl_preds_init))
     print(np.average(mrl_preds_opt))
@@ -517,6 +495,3 @@ if __name__ == '__main__':
     print(np.average(te_preds_opt))
 
     print(f"best seqs average MRL: {np.average(best_scores)}")
-    x = [i for i in range(int(STEPS))]
-    plt.plot(x, means)
-    plt.savefig('means_multiple.png')

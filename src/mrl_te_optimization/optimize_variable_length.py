@@ -8,8 +8,8 @@ import numpy as np
 np.random.seed(1337)
 import pandas as pd
 import torch
-from .utils.framepool import *
-from .utils.util import *
+from framepool import *
+from util import *
 
 import random
 random.seed(1337)
@@ -27,28 +27,36 @@ import pandas as pd
 import numpy as np
 import requests, sys
 
+parser = argparse.ArgumentParser()
+parser.add_argument('-d', type=str, required=False ,default='./../../data/utrdb2.csv') 
+parser.add_argument('-bc', type=int, required=False ,default=64)
+parser.add_argument('-lr', type=int, required=False ,default=1)
+parser.add_argument('-task', type=str, required=False ,default="mrl")
+parser.add_argument('-gpu', type=str, required=False ,default='-1')
+parser.add_argument('-s', type=int, required=False ,default=10000)
+args = parser.parse_args()
+
+if args.gpu == '-1':
+    device = 'cpu'
+else:
+    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
+    device = 'cuda'
+    if ',' in args.gpu:
+        device = 'cuda:1'
+
 def prepare_mttrans(seqs):
     seqs_init = torch.tensor(np.array(one_hot_all_motif(seqs),dtype=np.float32))
 
     seqs_init = torch.transpose(seqs_init, 1, 2)
-    seqs_init = torch.tensor(seqs_init,dtype=torch.float32).to('cuda:1')
+    seqs_init = torch.tensor(seqs_init,dtype=torch.float32).to(device)
     return seqs_init
 
 def prepare_framepool(seqs):
     return tf.convert_to_tensor(np.array([encode_seq_framepool(seq) for seq in seqs]),dtype=tf.float32)
 
-parser = argparse.ArgumentParser()
-parser.add_argument('-d', type=str, required=False ,default='./../../data/utrs.csv') 
-parser.add_argument('-uc', type=int, required=False ,default=64)
-parser.add_argument('-lr', type=int, required=False ,default=5)
-parser.add_argument('-gpu', type=str, required=False ,default='-1')
-parser.add_argument('-s', type=str, required=False ,default=2000)
-args = parser.parse_args()
 
-# os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
-# os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
-BATCH_SIZE = 64
+BATCH_SIZE = args.bc
 DIM = 40
 SEQ_LEN = 128
 UTR_LEN = 128
@@ -59,14 +67,23 @@ path = './script/checkpoint/RL_hard_share_MTL/3R/schedule_MTL-model_best_cv1.pth
 val_path = './script/checkpoint/RL_hard_share_MTL/3M/schedule_lr-model_best_cv1.pth'
 
 
-TASK = 'MMRL'
-OPT = 'FMRL'
+
+if args.task == 'te':
+    path = './script/checkpoint/RL_hard_share_MTL/3R/schedule_MTL-model_best_cv1.pth'
+    OPT = 'TE'
+else:
+    path = './script/checkpoint/RL_hard_share_MTL/3M/schedule_lr-model_best_cv1.pth'
+    OPT = 'FMRL'
+
+
 VAL = "MMRL"
 
-if VAL == 'FMRL':
-    MT_VALID = False
-else:
-    MT_VALID = True
+# if VAL == 'FMRL':
+#     MT_VALID = False
+# else:
+#     MT_VALID = True
+
+MT_VALID = False
 
 def select_best(scores, seqs):
     selected_scores = []
@@ -90,23 +107,25 @@ if __name__ == '__main__':
     else:
         Optimize_FrameSlice = False
 
+
+
     if Optimize_FrameSlice:
         model = load_framepool(mrl_path)
-        validation_model = torch.load(val_path,map_location=torch.device('cuda:1'))['state_dict']      
+        validation_model = torch.load(val_path,map_location=torch.device(device))['state_dict']      
         validation_model.train()
 
     else:
 
         if MT_VALID:
-            validation_model = torch.load(val_path,map_location=torch.device('cuda:1'))['state_dict']  
+            validation_model = torch.load(val_path,map_location=torch.device(device))['state_dict']  
             validation_model.train()   
 
-            model = torch.load(path,map_location=torch.device('cuda:1'))['state_dict']  
+            model = torch.load(path,map_location=torch.device(device))['state_dict']  
             model.train()   
         else:
             validation_model = load_framepool(mrl_path)
 
-            model = torch.load(path,map_location=torch.device('cuda:1'))['state_dict']  
+            model = torch.load(path,map_location=torch.device(device))['state_dict']  
             model.train()      
 
 
@@ -127,7 +146,6 @@ if __name__ == '__main__':
 
     DIM = 40
     MAX_LEN = 128
-    # BATCH_SIZE = args.uc
     LR = np.exp(-args.lr)
 
     tempnoise = tf.random.normal(shape=[BATCH_SIZE,DIM])
@@ -168,7 +186,7 @@ if __name__ == '__main__':
 
     noise_small = tf.random.normal(shape=[BATCH_SIZE,DIM],stddev=1e-4)
 
-    optimizer = tf.keras.optimizers.Adam(learning_rate=1e-1)
+    optimizer = tf.keras.optimizers.Adam(learning_rate=np.power(np.e,args.lr))
 
     '''
     Optimization takes place here.
@@ -199,7 +217,7 @@ if __name__ == '__main__':
         seqs = prepare_framepool(seqs_gen_init)
 
         seqs_init = prepare_mttrans(seqs_gen_init)
-        # seqs_init = torch.tensor(seqs_init, requires_grad=True)
+
         pred_init = validation_model.forward(seqs_init)
         pred_init = torch.flatten(pred_init)
 
@@ -215,7 +233,7 @@ if __name__ == '__main__':
         one_hots = one_hot_all_motif(np.array(seqs_gen_init))
         seqs = torch.tensor(one_hots,dtype=torch.double)
         seqs = torch.transpose(seqs, 1, 2)
-        seqs = seqs.float().to('cuda:1')
+        seqs = seqs.float().to(device)
 
         if MT_VALID:
 
@@ -255,8 +273,6 @@ if __name__ == '__main__':
         
         init_t = t.cpu().detach().numpy()
 
-    # print(init_t)
-
     init_exp = np.mean(init_t)
 
     max_init = np.max(init_t)
@@ -265,7 +281,7 @@ if __name__ == '__main__':
     
     predicted_mrls = []
 
-    STEPS = 3000
+    STEPS = args.s
 
     seqs_collection = []
     scores_collection = []
@@ -333,13 +349,12 @@ if __name__ == '__main__':
                     
                     seqs = torch.transpose(seqs, 1, 2)
                     seqs = seqs.float()
-                    seqs = torch.tensor(seqs.to('cuda:1'), requires_grad=True)
+                    seqs = torch.tensor(seqs.to(device), requires_grad=True)
                     pred = model(seqs)
                     pred = torch.flatten(pred)
                     predicted_mrls.append(np.average(pred.cpu().detach().numpy()))
                     scores_collection.append(pred.cpu().detach().numpy())
                     score = torch.mean(pred)
-                    # predicted_mrls.append(score.cpu().detach().numpy())
                     t = torch.flatten(pred)
                     mx = t.cpu().detach().numpy()
                     mx = np.max(mx)
@@ -368,10 +383,7 @@ if __name__ == '__main__':
             iters_.append(iter_)
             iter_ += 1
 
-            # print("SEQ")
-
         best_seqs, best_scores = select_best(scores_collection, seqs_collection)
-        # print(best_seqs)
 
         sequences_opt = wgan(noise)
         
@@ -400,7 +412,7 @@ if __name__ == '__main__':
             # print(np.shape(one_hots))
             seqs = torch.tensor(one_hots,dtype=torch.double)
             seqs = torch.transpose(seqs, 1, 2)
-            seqs = seqs.float().to('cuda:1')
+            seqs = seqs.float().to(device)
 
             if MT_VALID:
             
@@ -425,8 +437,6 @@ if __name__ == '__main__':
                 t = tf.reshape(val_pred,(-1))
 
                 sum_ = tf.reduce_sum(t).numpy().astype('float')
-
-                # pred(sum_)
                 
                 val_pred_opt = sum_/BATCH_SIZE
 
@@ -451,25 +461,24 @@ if __name__ == '__main__':
         min_opt = np.min(opt_t)
         max_opt = np.max(opt_t)
 
-        with open(f'init_mrl_{OPT}_{VAL}_{STEPS}.txt', 'w') as f:
+        with open(f'./outputs/init_mrl_{OPT}_{STEPS}.txt', 'w') as f:
             f.writelines([str(x)+'\n' for x in init_t])
 
-        with open(f'opt_mrl_{OPT}_{VAL}_{STEPS}.txt', 'w') as f:
+        with open(f'./outputs/opt_mrl_{OPT}_{STEPS}.txt', 'w') as f:
             f.writelines([str(x)+'\n' for x in best_scores])
 
-        with open(f'opt_seqs_{OPT}_{VAL}_{STEPS}.txt', 'w') as f:
+        with open(f'./outputs/opt_seqs_{OPT}_{STEPS}.txt', 'w') as f:
             f.writelines([str(x)+'\n' for x in best_seqs])
 
-        with open(f'init_seqs_{OPT}_{VAL}_{STEPS}.txt', 'w') as f:
+        with open(f'./outputs/init_seqs_{OPT}_{STEPS}.txt', 'w') as f:
             f.writelines([str(x)+'\n' for x in seqs_gen_init])
     
-        print(val_pred_init)
-        print(val_pred_opt)
-        print(np.average(init_t))
-        print(np.max(init_t))
-        print(np.average(opt_t))
-        print(np.max(opt_t))
-        print(f"best seqs average MRL: {np.average(best_scores)}")
+
+        print(f"Average Initial Pred: {np.average(init_t)}")
+        print(f"Max Initial Pred: {np.max(init_t)}")
+        print(f"Average Opt. Pred: {np.average(opt_t)}")
+        print(f"Max Opt. Pred: {np.max(opt_t)}")
+        print(f"Best seqs average MRL: {np.average(best_scores)}")
         x = [i for i in range(int(STEPS))]
         plt.plot(x, predicted_mrls)
         plt.savefig('opts')
