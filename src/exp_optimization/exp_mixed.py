@@ -45,9 +45,14 @@ def prepare_mttrans(seqs):
 
 DISPLAY_DIFF = True
 
-root_path = '/home/sina/UTR/optimization/exp/outputs/'
-tpath = '/home/sina/UTR/MTtrans/checkpoint/RL_hard_share_MTL/3R/schedule_MTL-model_best_cv1.pth'
-mpath = '/home/sina/UTR/MTtrans/checkpoint/RL_hard_share_MTL/3M/schedule_lr-model_best_cv1.pth'
+root_path = './outputs/'
+mpath = './scripts/checkpoint/RL_hard_share_MTL/3M/schedule_lr-model_best_cv1.pth'
+gpath = './../../models/checkpoint_3000.h5'
+mrl_path = './../../models/utr_model_combined_residual_new.h5'
+exp_path = './../../models/humanMedian_trainepoch.11-0.426.h5'
+tpath = './scripts/checkpoint/RL_hard_share_MTL/3R/schedule_MTL-model_best_cv1.pth'
+
+
 K = 64
 
 PREFIX = 'outputs/'
@@ -61,7 +66,7 @@ DISPLAY_DIFF = True
 if TYPE == 'REGULAR':
     PREFIX = 'outputs/'
 elif TYPE == 'MIXED':
-    PREFIX = 'outputs_mixed/'
+    PREFIX = 'outputs_joint/'
 elif TYPE == 'GC_CONTROLED':
     PREFIX = 'outputs/gc_'
 
@@ -206,16 +211,6 @@ sns.boxplot(x=df['x'],y=df['y'],ax=axs[0,1],palette={'Initial':colors[3],'Optimi
 
 orange_patch = mpatches.Patch(color='tab:orange', label='Initial Expression')
 blue_patch = mpatches.Patch(color='tab:blue', label='Optimized Expression')
-# fig.legend(handles=[orange_patch,blue_patch],loc='upper left')
-
-# axs[0,0].set_ylabel('TPM Expression')
-# axs[1,0].set_ylabel('TPM Expression')
-# axs[0,0].get_yaxis().set_label_coords(-0.07,0.5)
-# axs[1,0].get_yaxis().set_label_coords(-0.07,0.5)
-
-
-# axs[1,0].set_xlabel('UTR Samples')
-# axs[1,1].set_xlabel('UTR Samples')
 
 gene_name = 'TLR6'
 
@@ -275,7 +270,6 @@ print(f"Average Percent Increase (wrt Init): {np.average(diffs)}")
 print(f"Max TE after opt: {np.max(te_preds_opt)}")
 
 indices = np.argsort(opt)[::-1]
-# indices = indices[:100]
 
 init_large = []
 init_small = []
@@ -299,22 +293,14 @@ bins = [(i+1) * width for i in range(len(indices))]
 
 ns = [i * width for i in range(len(indices))]
 
-# plt.rcParams.update({'font.size': 12})
-
-# sns.barplot(x = 'total', y = 'abbrev', data = crashes,label = 'Total', color = 'b', edgecolor = 'w')
-
 axs[1,0].bar(x=ns, bottom=0, width=width, height=opt_large, color= colors[0], edgecolor="white")
 axs[1,0].bar(x=ns, bottom=0, width=width, height=opt_small, color= colors[0], edgecolor="white")
 axs[1,0].bar(x=ns, bottom=0, width=width, height=init_small, color= colors[3], edgecolor="white")
 axs[1,0].bar(x=ns, bottom=0, width=width, height=init_large, color= colors[3], edgecolor="white")
 axs[1,0].axhline(y = np.power(10,-0.37), color = colors[4], linestyle = '-', linewidth = 5)
-# sns.barplot(x=ns,width=width,y=opt_large,color='r',ax=axs[0,0])
-# sns.barplot(ax=axs[0,0],x=ns,width=width,y=opt_small,color='tab:blue',edgecolor='white')
-# sns.barplot(ax=axs[0,0],x=ns,width=width,y=init_large,color='tab:orange',edgecolor='white')
-# sns.barplot(ax=axs[0,0],x=ns,width=width,y=init_small,color='tab:orange',edgecolor='white')
 
 axs[1,0].set_title(gene_name,loc='left',style='italic')
-# axs[1,1].set_title(gene_name,loc='left',style='italic')
+
 axs[1,0].set_xticks([])
 
 real_x = ['Optimized' for i in range(len(init))]
@@ -327,22 +313,14 @@ y = np.concatenate((init,opt))
 
 df = pd.DataFrame({'x':x,'y':y})
 
-# sns.boxplot(x=df['x'],y=df['y'],ax=axs[1,1])
-
 # MRL
 
 x = np.concatenate((gen_x,real_x))
 y = np.concatenate((mrl_preds_init,mrl_preds_opt))
 
-# print(len(x))
-# print(len(y))
-
-# print(x)
-# print(y)
 
 df = pd.DataFrame({'x':x,'y':y})
 
-# sns.boxplot(x=df['x'],y=df['y'],ax=axs[1,0])
 
 # TE
 
@@ -356,15 +334,6 @@ sns.boxplot(x=df['x'],y=df['y'],ax=axs[1,1],palette={'Initial':colors[3],'Optimi
 orange_patch = mpatches.Patch(color='tab:orange', label='Initial Expression')
 blue_patch = mpatches.Patch(color='tab:blue', label='Optimized Expression')
 # fig.legend(handles=[orange_patch,blue_patch],loc='upper left')
-
-# axs[,0].set_ylabel('TPM Expression')
-# axs[1,0].set_ylabel('TPM Expression')
-# axs[0,0].get_yaxis().set_label_coords(-0.07,0.5)
-# axs[1,0].get_yaxis().set_label_coords(-0.07,0.5)
-
-
-# axs[1,0].set_xlabel('UTR Samples')
-# axs[1,1].set_xlabel('UTR Samples')
 
 gene_name = 'TNF'
 

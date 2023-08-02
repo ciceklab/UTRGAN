@@ -116,13 +116,7 @@ def create_frame_slice_model(n_conv_layers=3,
     conv_features = input_seq
     # Compute presence of zero padding
     pad_mask = Lambda(compute_pad_mask, name="compute_pad_mask")(conv_features)
-    # Hasan-track
-    # if use_counter_input:
-    #     input_counter = Input(shape=(None, ), name="input_counter")
-    #     inputs = [input_seq, input_counter]
-    #     counter = Lambda(lambda x: K.expand_dims(x, axis=2), name="dim_expand")(input_counter)
-    #     conv_features = Concatenate(axis=-1, name="concat_counter")([conv_features, counter])
-    # Convolution
+
     layer_list = []
     for i in range(n_conv_layers):
         if skip_connections:
@@ -161,14 +155,7 @@ def create_frame_slice_model(n_conv_layers=3,
         predict = Dense(fc_neurons[i], activation='relu', name="fully_connected_"+str(i))(predict)
         predict = Dropout(rate=fc_drop_rate, name="fc_dropout_"+str(i))(predict)
     predict = Dense(1, name="mrl_output_unscaled")(predict) 
-    # Scaling regression
-    # if use_scaling_regression:
-    #     input_experiment = Input(shape=(library_size, ), name="input_experiment")
-    #     predict = Lambda(interaction_term, name="interaction_term")([predict, input_experiment])
-    #     predict = Concatenate(axis = 1, name="prepare_regression")([predict, input_experiment])
-    #     predict = Dense(1, name="scaling_regression", use_bias=False)(predict)
-    #     inputs = [inputs] + [input_experiment]
-    """ Model """
+
     model = Model(inputs=inputs, outputs=predict)
     adam = tf.keras.optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
     model.compile(loss=loss, optimizer=adam)

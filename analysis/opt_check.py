@@ -6,19 +6,6 @@ import os
 sns.set()
 sns.set_style('ticks')
 
-# params = {'legend.fontsize': 32,
-#         'figure.figsize': (32, 12),
-#         'axes.labelsize': 34,
-#         'axes.titlesize':34,
-#         'xtick.labelsize':34,
-#         'ytick.labelsize':24}
-
-# params = {'legend.fontsize': 32,
-#         'figure.figsize': (54, 27),
-#         'axes.labelsize': 34,
-#         'axes.titlesize':54,
-#         'xtick.labelsize':54,
-#         'ytick.labelsize':24}
 
 params = {'legend.fontsize': 50,
         'figure.figsize': (54, 27),
@@ -99,17 +86,8 @@ plt.rcParams.update({'font.size': 12})
 
 print(len(diffs))
 
-# blue_patch = mpatches.Patch(color='tab:blue', label='MRL Change')
-# orange_patch = mpatches.Patch(color='tab:orange', label='Initial MRL')
-# plt.legend(handles=[blue_patch,orange_patch])
-
-# axs2 = axs[0].twinx()
-# axs2.set_ylabel('Initial MRL')
-# axs2.bar(x=new_n, bottom=0, width=width, height=new_inits,color='tab:orange')
-# axs2.set_ylim([-8, 10])
 axs[0,1].bar(x=new_n, bottom=0, width=width, height=diffs,color=colors[0])
 axs[0,1].set_xticks([])
-# axs[0,1].set_xlabel('UTR Samples')
 axs[0,1].set_ylabel('TE Change')
 axs[0,1].set_title('B',weight='bold',fontsize=60,loc='left')
 
@@ -188,18 +166,6 @@ step = 1.0/N
 new_n = [i * step for i in range(N)]
 
 width = step
-print(len(diffs))
-# orange_patch = mpatches.Patch(color='tab:blue', label='Expression Change')
-# plt.legend(handles=[orange_patch])
-
-# blue_patch = mpatches.Patch(color='tab:blue', label='Exp Change')
-# orange_patch = mpatches.Patch(color='tab:orange', label='Initial Exp')
-# plt.legend(handles=[blue_patch,orange_patch])
-
-# axs2 = axs[1].twinx()
-# axs2.set_ylabel('Initial Exp MRL')
-# axs2.bar(x=new_n, bottom=0, width=width, height=new_inits,color='tab:orange')
-# axs2.set_ylim([-10, 10])
 
 axs[0,0].bar(x=new_n, bottom=0, width=width, height=diffs,color=colors[0])
 axs[0,0].set_xticks([])
@@ -228,8 +194,6 @@ with open('/home/sina/UTR/optimization/mrl/opt_mrl_FMRL_MMRL.txt') as f:
 init = np.array(init)
 opt = np.array(opt)
 
-# init = np.power(10,init)
-# opt = np.power(10,opt)
 
 SORT_INIT = False
 
@@ -278,17 +242,8 @@ plt.rcParams.update({'font.size': 12})
 
 print(len(diffs))
 
-# blue_patch = mpatches.Patch(color='tab:blue', label='MRL Change')
-# orange_patch = mpatches.Patch(color='tab:orange', label='Initial MRL')
-# plt.legend(handles=[blue_patch,orange_patch])
-
-# axs2 = axs[0].twinx()
-# axs2.set_ylabel('Initial MRL')
-# axs2.bar(x=new_n, bottom=0, width=width, height=new_inits,color='tab:orange')
-# axs2.set_ylim([-8, 10])
 axs[0,2].bar(x=new_n, bottom=0, width=width, height=diffs,color=colors[0])
 axs[0,2].set_xticks([])
-# axs[0,2].set_xlabel('UTR Samples')
 axs[0,2].set_ylabel('MRL Change')
 axs[0,2].set_title('C',weight='bold',fontsize=60,loc='left')
 
@@ -303,4 +258,4 @@ axs[1,2].set_title('F',weight='bold',fontsize=60,loc='left')
 
 fig.tight_layout()
 
-plt.savefig('mrl_expall_opt_updated.png')
+plt.savefig('./plots/opt_init_comparison.png')

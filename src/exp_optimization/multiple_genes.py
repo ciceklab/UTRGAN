@@ -52,10 +52,10 @@ BATCH_SIZE = 100
 SEQ_BATCH = 8
 UTR_LEN = 128
 DIM = 40
-gpath = '/home/sina/UTR/gan/logs/2023.07.21-22h39m31s_neo_july22_g5c5_d40_u128_utrdb2/checkpoint_h5/checkpoint_3000.h5'
-mrl_path = '/home/sina/UTR/models/utr_model_combined_residual_new.h5'
-exp_path = '/home/sina/UTR/models/humanMedian_trainepoch.11-0.426.h5'
-tpath = '/home/sina/UTR/MTtrans/checkpoint/RL_hard_share_MTL/3R/schedule_MTL-model_best_cv1.pth'
+gpath = './../../models/checkpoint_3000.h5'
+mrl_path = './../../models/utr_model_combined_residual_new.h5'
+exp_path = './../../models/humanMedian_trainepoch.11-0.426.h5'
+tpath = './scripts/checkpoint/RL_hard_share_MTL/3R/schedule_MTL-model_best_cv1.pth'
 LR = np.exp(-int(args.lr))
 
 def fetch_seq(start, end, chr, strand):

@@ -8,7 +8,6 @@ import time
 sys.path.append('/home/sina/UTR/gan')
 sys.path.insert(0, '/home/sina/UTR/gan')
 from lib import models
-# from.lib.models import resnet_d2, resnet_g2
 from lib import utils
 import socket
 import datetime
@@ -16,6 +15,7 @@ from tqdm import tqdm
 import os
 import random
 import matplotlib.pyplot as plt
+import argparse
 
 import tensorflow.keras.backend as K
 from tensorflow.keras.optimizers import Adam
@@ -100,7 +100,7 @@ UTRdf = data_utr['seq'].to_numpy()
 
 seqs = []
 
-UTR_LEN = 64
+UTR_LEN = args.mxl
 
 for i in range(len(UTRdf)):
     if len(UTRdf[i]) < UTR_LEN+1 and len(UTRdf[i]) > int(UTR_LEN/2):
@@ -137,13 +137,13 @@ def one_hot_encode_2(seq, SEQ_LEN=UTR_LEN):
 ohe_sequences = np.asarray([one_hot_encode(x) for x in sequences])
 
 
-BATCH_SIZE = 64 # Batch size
+BATCH_SIZE = args.bc # Batch size
 ITERS = 4000 # How many iterations to train for
 SEQ_LEN = UTR_LEN # Sequence length in characters
-DIM = 20 # Model dimensionality.
+DIM = args.dim # Model dimensionality.
 CRITIC_ITERS = 5 # How many critic iterations per generator iteration. 
 LAMBDA = 10 # Gradient penalty lambda hyperparameter.
-LR = 3e-4
+LR = np.pow(np.e,args.lr)
 
 
 LAMBDA = 10 # For gradient penalty
@@ -151,7 +151,6 @@ LAMBDA = 10 # For gradient penalty
 CURRENT_EPOCH = 1 # Epoch start from
 SAVE_EVERY_N_EPOCH = 50 # Save checkpoint at every n epoch
 
-LR = 1e-4
 MIN_LR = 0.000001 # Minimum value of learning rate
 DECAY_FACTOR=1.00004 # learning rate decay factor
 '''

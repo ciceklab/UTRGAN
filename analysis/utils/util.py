@@ -154,11 +154,6 @@ def random_sample(length):
             sample += random.choice(['C','G'])
         else:
             sample += random.choice(['A','T'])
-    # rsample = [random.randrange(4) for i in range(length)]
-    # rsample = [mapping[i] for i in rsample]
-    # string = ''
-    # for neuc in rsample:
-    #     string += neuc
 
     return sample 
 

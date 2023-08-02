@@ -79,21 +79,12 @@ Z_DIM = 40
 DIM = Z_DIM
 BATCH_SIZE = 2048
 MAX_LEN = UTR_LEN
-gpath = '/home/sina/UTR/gan/logs/2023.07.21-22h39m31s_neo_july22_g5c5_d40_u128_utrdb2/checkpoint_h5/checkpoint_3000.h5'
-data_path = '/home/sina/UTR/data/utrdb2.csv'
-mrl_path = '/home/sina/UTR/models/utr_model_combined_residual_new.h5'
-
-
+gpath = './../models/checkpoint_3000.h5'
+data_path = './../data/utrdb2.csv'
+mrl_path = './../models/utr_model_combined_residual_new.h5'
 
 sns.set()
 sns.set_style('ticks')
-
-params = {'legend.fontsize': 32,
-        'figure.figsize': (54, 40),
-        'axes.labelsize': 54,
-        'axes.titlesize':54,
-        'xtick.labelsize':54,
-        'ytick.labelsize':36}
 
 #POSTER
 params = {'legend.fontsize': 48,
@@ -220,25 +211,25 @@ if DIST == 'KMER':
     dist_gen = calc_dist_kmer(gens, naturals)
     dist_real = calc_dist_kmer(naturals, naturals)
 else:
-    if os.path.exists('/home/sina/UTR/analysis/plots/rand_ham_new.npy'):
-        dist_rand = np.load('/home/sina/UTR/analysis/plots/rand_ham_new.npy', allow_pickle=True)
+    if os.path.exists('./files/rand_ham_new.npy'):
+        dist_rand = np.load('./files/rand_ham_new.npy', allow_pickle=True)
     else:
         dist_rand = hamming_dist(randoms,naturals_all)
-        with open("/home/sina/UTR/analysis/plots/rand_ham_new.npy", 'wb') as f:
+        with open("./files/rand_ham_new.npy", 'wb') as f:
             np.save(f,dist_rand)
 
-    if os.path.exists('/home/sina/UTR/analysis/plots/real_ham_new.npy'):
-        dist_real = np.load('/home/sina/UTR/analysis/plots/real_ham_new.npy', allow_pickle=True)
+    if os.path.exists('./files/real_ham_new.npy'):
+        dist_real = np.load('./files/real_ham_new.npy', allow_pickle=True)
     else:
         dist_real = hamming_dist(naturals, naturals_all)
-        with open("/home/sina/UTR/analysis/plots/real_ham_new.npy", 'wb') as f:
+        with open("./files/real_ham_new.npy", 'wb') as f:
             np.save(f,dist_real)        
 
-    if os.path.exists('/home/sina/UTR/analysis/plots/gen_ham_new.npy'):
-        dist_gen = np.load('/home/sina/UTR/analysis/plots/gen_ham_new.npy', allow_pickle=True)
+    if os.path.exists('./files/gen_ham_new.npy'):
+        dist_gen = np.load('./files/gen_ham_new.npy', allow_pickle=True)
     else:
         dist_gen = hamming_dist(gens, naturals_all)
-        with open("/home/sina/UTR/analysis/plots/gen_ham_new.npy", 'wb') as f:
+        with open("./files/gen_ham_new.npy", 'wb') as f:
             np.save(f,dist_gen)
 
 # filter:
@@ -281,25 +272,25 @@ else:
 
 ############################################################################
 
-if os.path.exists('/home/sina/UTR/analysis/plots/rand_4mer_new.npy'):
-    dist_rand = np.load('/home/sina/UTR/analysis/plots/rand_4mer_new.npy', allow_pickle=True)
+if os.path.exists('./files/rand_4mer_new.npy'):
+    dist_rand = np.load('./files/rand_4mer_new.npy', allow_pickle=True)
 else:
     dist_rand = calc_dist_kmer(randoms, naturals_all)
-    with open("/home/sina/UTR/analysis/plots/rand_4mer_new.npy", 'wb') as f:
+    with open("./files/rand_4mer_new.npy", 'wb') as f:
         np.save(f,dist_rand)
 
-if os.path.exists('/home/sina/UTR/analysis/plots/real_4mer_new.npy'):
-    dist_real = np.load('/home/sina/UTR/analysis/plots/real_4mer_new.npy', allow_pickle=True)
+if os.path.exists('./files/real_4mer_new.npy'):
+    dist_real = np.load('./files/real_4mer_new.npy', allow_pickle=True)
 else:
     dist_real = calc_dist_kmer(naturals, naturals_all)
-    with open("/home/sina/UTR/analysis/plots/real_4mer_new.npy", 'wb') as f:
+    with open("./files/real_4mer_new.npy", 'wb') as f:
         np.save(f,dist_real)        
 
-if os.path.exists('/home/sina/UTR/analysis/plots/gen_4mer_new.npy'):
-    dist_gen = np.load('/home/sina/UTR/analysis/plots/gen_4mer_new.npy', allow_pickle=True)
+if os.path.exists('./files/gen_4mer_new.npy'):
+    dist_gen = np.load('./files/gen_4mer_new.npy', allow_pickle=True)
 else:
     dist_gen = calc_dist_kmer(gens, naturals_all)
-    with open("/home/sina/UTR/analysis/plots/gen_4mer_new.npy", 'wb') as f:
+    with open("./files/gen_4mer_new.npy", 'wb') as f:
         np.save(f,dist_gen)
 
 anomalies = 0
@@ -367,9 +358,9 @@ axs[0,2].set_xlabel("")
 
 ########################################################### TE
 
-randpreds = np.load('/home/sina/UTR/optimization/mrl/te_rands.npy',allow_pickle=True)
-genpreds = np.load('/home/sina/UTR/optimization/mrl/te_gens.npy',allow_pickle=True)
-realpreds = np.load('/home/sina/UTR/optimization/mrl/te_reals.npy',allow_pickle=True)
+randpreds = np.load('./files/te_rands.npy',allow_pickle=True)
+genpreds = np.load('./files/te_gens.npy',allow_pickle=True)
+realpreds = np.load('./files/te_reals.npy',allow_pickle=True)
 
 real_x = ['Natural' for i in range(len(realpreds))]
 gen_x = ['Generated' for i in range(len(genpreds))]
@@ -405,44 +396,68 @@ fig.tight_layout(pad=2)
 plt.savefig('./plots/violins_all.png')
 
 print("Mean Ribosome Load KStest:")
+print("Generated Samples Test:")
 print(gent_mrl)
 print(genu_mrl)
+print("Generated Samples Effect Size and Confidence Interval:")
 print(es_gen_mrl)
+print("Random Samples Test:")
 print(randt_mrl)
 print(randu_mrl)
+print("Random Samples Effect Size and Confidence Interval:")
 print(es_rand_mrl)
 print("Minimum Free Energy KStest:")
+print("Generated Samples Test:")
 print(gent_mfe)
 print(genu_mfe)
+print("Generated Samples Effect Size and Confidence Interval:")
 print(es_gen_mfe)
+print("Random Samples Test:")
 print(randt_mfe)
 print(randu_mfe)
+print("Random Samples Effect Size and Confidence Interval:")
 print(es_rand_mfe)
-print("Ham Distance KStest:")
+print("Levenshtien Distance KStest:")
+print("Generated Samples Test:")
 print(gent_dist)
 print(genu_dist)
+print("Generated Samples Effect Size and Confidence Interval:")
 print(es_gen_lev)
+print("Random Samples Test:")
 print(randt_dist)
 print(randu_dist)
+print("Random Samples Effect Size and Confidence Interval:")
 print(es_rand_lev)
-print("4mer Distance KStest:")
+print("4-mer Distribution Distance KStest:")
+print("Generated Samples Test:")
 print(gent_dist2)
 print(genu_dist2)
+print("Generated Samples Effect Size and Confidence Interval:")
 print(es_gen_4mer)
+print("Random Samples Test:")
 print(randt_dist2)
 print(randu_dist2)
+print("Random Samples Effect Size and Confidence Interval:")
 print(es_rand_4mer)
 print("GC Content KStest:")
+print("Generated Samples Test:")
 print(gent_gc)
 print(genu_gc)
+print("Generated Samples Effect Size and Confidence Interval:")
 print(es_gen_gc)
+print("Random Samples Test:")
 print(randt_gc)
 print(randu_gc)
+print("Random Samples Effect Size and Confidence Interval:")
 print(es_rand_gc)
 print("TE KStest:")
+print("Generated Samples Test:")
 print(gent_te)
 print(genu_te)
+print("Generated Samples Effect Size and Confidence Interval:")
 print(es_gen_te)
+print("Random Samples Test:")
 print(randt_te)
 print(randu_te)
+print("Random Samples Effect Size and Confidence Interval:")
 print(es_rand_te)

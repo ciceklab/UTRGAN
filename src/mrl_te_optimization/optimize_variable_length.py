@@ -8,8 +8,8 @@ import numpy as np
 np.random.seed(1337)
 import pandas as pd
 import torch
-from framepool import *
-from util import *
+from .utils.framepool import *
+from .utils.util import *
 
 import random
 random.seed(1337)
@@ -52,15 +52,13 @@ BATCH_SIZE = 64
 DIM = 40
 SEQ_LEN = 128
 UTR_LEN = 128
-gpath = '/home/sina/UTR/gan/logs/2023.07.21-22h39m31s_neo_july22_g5c5_d40_u128_utrdb2/checkpoint_h5/checkpoint_3000.h5'
-# gpath = '/mnt/sina/run/ml/gan/dev/checkpoint_h5_old/checkpoint_50000.h5'
-mrl_path = '/home/sina/UTR/models/utr_model_combined_residual_new.h5'
+gpath = './../../models/checkpoint_3000.h5'
+mrl_path = './../../models/utr_model_combined_residual_new.h5'
 
-path = '/home/sina/UTR/MTtrans/checkpoint/RL_hard_share_MTL/3R/schedule_MTL-model_best_cv1.pth'
-val_path = '/home/sina/UTR/MTtrans/checkpoint/RL_hard_share_MTL/3M/schedule_lr-model_best_cv1.pth'
-# path = '/home/sina/UTR/optimization/mrl/script/checkpoint/RL_hard_share_MTL/3M3R/PoolingAll-model_best.pth'
-# path = '/home/sina/UTR/MTtrans/log/Backbone/RL_hard_share/3M3R/PoolingAll-model_best.pth'
-# val_path = '/home/sina/UTR/MTtrans/checkpoint/RL_hard_share_MTL/3M/schedule_lr-model_best_cv1.pth'
+path = './script/checkpoint/RL_hard_share_MTL/3R/schedule_MTL-model_best_cv1.pth'
+val_path = './script/checkpoint/RL_hard_share_MTL/3M/schedule_lr-model_best_cv1.pth'
+
+
 TASK = 'MMRL'
 OPT = 'FMRL'
 VAL = "MMRL"
@@ -87,8 +85,6 @@ def select_best(scores, seqs):
 
 if __name__ == '__main__':
     
-    # max_len = len(max(df[self.col], key=len))
-
     if OPT == 'FMRL':
         Optimize_FrameSlice = True
     else:
@@ -109,7 +105,7 @@ if __name__ == '__main__':
             model.train()   
         else:
             validation_model = load_framepool(mrl_path)
-            # validation_model = convert_model(validation_model)
+
             model = torch.load(path,map_location=torch.device('cuda:1'))['state_dict']  
             model.train()      
 
