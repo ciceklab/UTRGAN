@@ -28,7 +28,8 @@ Configuration = Auto_popen(abs_path)
 np.random.seed(25)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-bc', type=int, required=False ,default=64)
+parser.add_argument('-bs', type=int, required=False ,default=64)
+parser.add_argument('-dc', type=int, required=False ,default=8)
 parser.add_argument('-lr', type=int, required=False ,default=1)
 parser.add_argument('-gpu', type=str, required=False ,default='-1')
 parser.add_argument('-s', type=int, required=False ,default=3000)
@@ -42,8 +43,8 @@ else:
     if args.gpu.includes(','):
         device = 'cuda:1'
 
-BATCH_SIZE = args.bc
-SEQ_BATCH = 8
+BATCH_SIZE = args.bs
+SEQ_BATCH = args.dc
 UTR_LEN = 128
 DIM = 40
 gpath = './../../models/checkpoint_3000.h5'

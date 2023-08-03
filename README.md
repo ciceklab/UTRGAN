@@ -77,11 +77,14 @@ $ python ./src/gan/wgan.py
 
 #### Required Arguments
 
+##### -gpu
+- The gpus that will be set as "CUDA_VISIBLE_DEVICES", cpu will be used as default
+
 ##### -bs, --batch_size
 - The batch size used to train the model, the default value is 64 
 
 ##### -d, --dataset
-- The CSV file including the UTR samples. The default path used is './data/utrs.csv'.
+- The CSV file including the UTR samples. The default path used is './data/utrdb2.csv'.
 
 ##### -lr, --learning_rate
 - The learning rate of the Adam optimizer used to optimize the model parameters. The default value is 1e-5. If 4 is provided, the learning rate will be 1e-4.
@@ -109,19 +112,20 @@ $ python ./src/exp_optimization/single_gene.py
 
 #### Required Arguments
 
-##### -gp, --gene_path
-- The path to a fasta file including the gene
+##### -gpu
+- The gpus that will be set as "CUDA_VISIBLE_DEVICES", cpu will be used as default
 
-##### -gn, --gene_name
-- The name of the gene or the id of the gene in the fasta file
+##### -g
+- The name of the txt file including the gene dna
+- The file should be: /src/exp_optimization/genes/GENE_NAME.txt
 
-##### -lr, --learning_rate
+##### -lr
 - The learning rate of the Adam optimizer used to optimize the model parameters. The default value is 3e-5. 
 
-##### -n, --n_iterations
+##### -s
 - The number of iterations the optimization is performed. The default value is 3,000 iterations.
 
-##### -uc, --utr_count
+##### -bc
 - The number of 5' UTR sequences generated and optimized. Default: 128.
 
 ### Optimize multiple genes for optimization:
@@ -132,16 +136,20 @@ $ python ./src/exp_optimization/multiple_genes.py
 
 #### Required Arguments
 
-##### -gp, --gene_path
-- The path to a fasta file including the set of genes
+##### -gpu
+- The gpus that will be set as "CUDA_VISIBLE_DEVICES", cpu will be used as default
 
-##### -lr, --learning_rate
+##### -g
+- The name of the txt file including the gene dna
+- The file should be: /src/exp_optimization/genes/GENE_NAME.txt
+
+##### -lr
 - The learning rate of the Adam optimizer used to optimize the model parameters. The default value is 3e-5. 
 
-##### -dc, --dna_count
+##### -dc
 - The number of Randomly selected genes. Default: 128.
 
-##### -uc, --utr_count
+##### -bc
 - The number of 5' UTR optimized per DNA. Default: 128.
 
 ### Joint optimization of translation efficiency and gene expression:
@@ -152,13 +160,17 @@ $ python ./src/exp_optimization/joint_opt.py
 
 #### Required Arguments
 
-##### -gp, --gene_path
-- The path to a fasta file including the set of genes
+##### -gpu
+- The gpus that will be set as "CUDA_VISIBLE_DEVICES", cpu will be used as default
 
-##### -lr, --learning_rate
+##### -g
+- The name of the txt file including the gene dna
+- The file should be: /src/exp_optimization/genes/GENE_NAME.txt
+
+##### -lr
 - The learning rate of the Adam optimizer used to optimize the model parameters. The default value is 3e-5. 
 - 
-##### -uc, --utr_count
+##### -bs
 - The number of 5' UTR optimized per DNA. Default: 128.
 
 ### Optimize multiple UTRs for high MRL:
@@ -169,13 +181,13 @@ $ python ./src/mrl_te_optimization/optimize_variable_length.py
 
 #### Required Arguments
 
-##### -lr, --learning_rate
+##### -lr
 - The learning rate of the Adam optimizer used to optimize the model parameters. The default value is 3e-5. 
 
-##### -opt, --optimization_model
-- Either TE or MRL
+##### -opt
+- Either "te" or "mrl"
 
-##### -uc, --utr_count
+##### -bs
 - The number of 5' UTR optimized. Default: 128.
 
 ## Usage Examples

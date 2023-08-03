@@ -29,7 +29,7 @@ import requests, sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-d', type=str, required=False ,default='./../../data/utrdb2.csv') 
-parser.add_argument('-bc', type=int, required=False ,default=64)
+parser.add_argument('-bs', type=int, required=False ,default=64)
 parser.add_argument('-lr', type=int, required=False ,default=1)
 parser.add_argument('-task', type=str, required=False ,default="mrl")
 parser.add_argument('-gpu', type=str, required=False ,default='-1')
@@ -56,7 +56,7 @@ def prepare_framepool(seqs):
 
 
 
-BATCH_SIZE = args.bc
+BATCH_SIZE = args.bs
 DIM = 40
 SEQ_LEN = 128
 UTR_LEN = 128

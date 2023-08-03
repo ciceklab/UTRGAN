@@ -32,7 +32,7 @@ tf.compat.v1.enable_eager_execution()
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-d', type=str, required=False ,default='./../../data/utrdb2.csv') 
-parser.add_argument('-bc', type=int, required=False ,default=64)
+parser.add_argument('-bs', type=int, required=False ,default=64)
 parser.add_argument('-g', type=str, required=False ,default='IFNG')
 parser.add_argument('-lr', type=int, required=False ,default=1)
 parser.add_argument('-gpu', type=str, required=False ,default='-1')
@@ -47,7 +47,7 @@ else:
     if args.gpu.includes(','):
         device = 'cuda:1'
 
-BATCH_SIZE = args.bc
+BATCH_SIZE = args.bs
 DIM = 40
 SEQ_LEN = 128
 MAX_LEN = SEQ_LEN
