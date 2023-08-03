@@ -24,12 +24,12 @@ fig, axs = plt.subplots(2,3)
 colors = ["#3c5068", "#acbab6", "#dcd3cd", "#d4a6a6"]
 
 init = []
-with open('/home/sina/UTR/optimization/mrl/init_mrl_TE_MMRL.txt') as f:
+with open('./../src/mrl_te_optimization/outputs/init_mrl_TE_MMRL.txt') as f:
     scores = f.readlines()
     init = [float(score.replace('\n','')) for score in scores]
 
 opt = []
-with open('/home/sina/UTR/optimization/mrl/opt_mrl_TE_MMRL.txt') as f:
+with open('./../src/mrl_te_optimization/outputs/opt_mrl_TE_MMRL.txt') as f:
     scores = f.readlines()
     opt = [float(score.replace('\n','')) for score in scores]
 
@@ -98,12 +98,12 @@ axs[1,1].set_ylabel('Initial TE')
 axs[1,1].set_title('E',weight='bold',fontsize=60,loc='left')
 
 init = []
-with open('/home/sina/UTR/optimization/exp/outputs/mul_init_exps.txt') as f:
+with open('./../src/exp_optimization/outputs/mul_init_exps.txt') as f:
     scores = f.readlines()
     init = [float(score.replace('\n','')) for score in scores]
 
 opt = []
-with open('/home/sina/UTR/optimization/exp/outputs/mul_opt_exps.txt') as f:
+with open('./../src/exp_optimization/outputs/mul_opt_exps.txt') as f:
     scores = f.readlines()
     opt = [float(score.replace('\n','')) for score in scores]
 

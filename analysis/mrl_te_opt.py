@@ -30,8 +30,6 @@ np.random.seed(25)
 
 DISPLAY_DIFF = True
 
-root_path = '/home/sina/UTR/optimization/exp/outputs/'
-
 K = 100
 
 PREFIX = ''

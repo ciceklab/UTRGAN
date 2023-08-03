@@ -38,6 +38,7 @@ Sina Barazandeh, Furkan Ozden, Ahmet Hincer, Urartu Ozgur Safak Seker, A. Ercume
 - [Installation](#installation)
 - [Features](#features)
 - [Instructions Manual](#instructions-manual)
+- [Reproducing Results](#reproduce)
 - [Usage Examples](#usage-examples)
 - [Citations](#citations)
 - [License](#license)
@@ -189,6 +190,30 @@ $ python ./src/mrl_te_optimization/optimize_variable_length.py
 
 ##### -bs
 - The number of 5' UTR optimized. Default: 128.
+
+## Reproduce
+
+You should run the following scripts:
+
+./src/mrl_te_optimization.py -task te
+./src/mrl_te_optimization.py -task mrl
+./src/exp_optimization/multiple_genes.py
+./src/exp_optimization/single_gene.py -g [IFNG, TNF, TLR6, TP53]
+./src/exp_optimization/joint_opt.py -g [IFNG, TNF, TLR6, TP53]
+
+To reproduce plots:
+
+./analysis/violin_plots.py
+./analysis/plot_4x4.py
+./analysis/opt_check.py
+./analysis/mrl_te_opt.py
+./src/exp_optimization/exp_joint.py
+
+All the plots will be in: ./analysis/plots/
+
+The p-values, confidence intervals and effect sizes will be printed in the terminal output of the "violin_plots.py" script
+
+The average and maximum increase statistics will be printed for each boxplot generating script
 
 ## Usage Examples
 
