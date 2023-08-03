@@ -23,11 +23,6 @@ from util import *
 from framepool import *
 from popen import Auto_popen
 
-import scipy.stats as stats
-abs_path = '/home/sina/UTR/optimization/mrl/log/Backbone/RL_hard_share/3M/small_repective_filed_strides1113.ini'
-Configuration = Auto_popen(abs_path)
-import utils as util_motif
-
 tf.compat.v1.enable_eager_execution()
 
 parser = argparse.ArgumentParser()
@@ -54,7 +49,7 @@ SEQ_LEN = 128
 gpath = './../../models/checkpoint_3000.h5'
 mrl_path = './../../models/utr_model_combined_residual_new.h5'
 exp_path = './../../models/humanMedian_trainepoch.11-0.426.h5'
-tpath = './scripts/checkpoint/RL_hard_share_MTL/3R/schedule_MTL-model_best_cv1.pth'
+tpath = './script/checkpoint/RL_hard_share_MTL/3R/schedule_MTL-model_best_cv1.pth'
 
 # exp_path = '/home/sina/UTR/models/GM12878_trainepoch.06-0.5062.h5'
 

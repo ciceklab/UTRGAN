@@ -49,7 +49,7 @@ DIM = 40
 gpath = './../../models/checkpoint_3000.h5'
 mrl_path = './../../models/utr_model_combined_residual_new.h5'
 exp_path = './../../models/humanMedian_trainepoch.11-0.426.h5'
-tpath = './scripts/checkpoint/RL_hard_share_MTL/3R/schedule_MTL-model_best_cv1.pth'
+tpath = './script/checkpoint/RL_hard_share_MTL/3R/schedule_MTL-model_best_cv1.pth'
 LR = np.exp(-int(args.lr))
 
 def fetch_seq(start, end, chr, strand):
@@ -191,9 +191,10 @@ def select_dna_batch(fname='./../../data/genes.txt',dna_batch=32):
     refs = read_genes(fname)
     indices = random.sample(range(0,refs.shape[0]),dna_batch)
     refs = refs
+    gene_names = []
     for i in range(len(indices)):
-        print(df.iloc[indices[i]]['gene'])
-    return indices, refs
+        gene_names.append(df.iloc[indices[i]]['gene'])
+    return indices, refs, gene_names
 
 def replace_xpresso_seqs(gens,df:pd.DataFrame,refs,index):
     seqs = []
@@ -313,7 +314,7 @@ if __name__ == '__main__':
     OPTIMIZE = True
 
     DNA_SEL = False
-    indices, refs = select_dna_batch(dna_batch=SEQ_BATCH)
+    indices, refs, names = select_dna_batch(dna_batch=SEQ_BATCH)
 
     sequences_init = wgan(noise)
 
@@ -484,7 +485,8 @@ if __name__ == '__main__':
 
 
 
-
+    print("Genes:")
+    print(names)
     print(np.average(init_t))
     print(np.average(opt_t))
     print("MRL:")

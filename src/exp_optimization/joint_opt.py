@@ -53,7 +53,7 @@ SEQ_LEN = 128
 MAX_LEN = SEQ_LEN
 
 gpath = './../../models/checkpoint_3000.h5'
-tpath = './scripts/checkpoint/RL_hard_share_MTL/3R/schedule_MTL-model_best_cv1.pth'
+tpath = './script/checkpoint/RL_hard_share_MTL/3R/schedule_MTL-model_best_cv1.pth'
 
 
 def fetch_seq(start, end, chr, strand):

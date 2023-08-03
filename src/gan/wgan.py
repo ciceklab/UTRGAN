@@ -137,13 +137,13 @@ def one_hot_encode_2(seq, SEQ_LEN=UTR_LEN):
 ohe_sequences = np.asarray([one_hot_encode(x) for x in sequences])
 
 
-BATCH_SIZE = args.bc # Batch size
+BATCH_SIZE = args.bs # Batch size
 ITERS = 4000 # How many iterations to train for
 SEQ_LEN = UTR_LEN # Sequence length in characters
 DIM = args.dim # Model dimensionality.
 CRITIC_ITERS = 5 # How many critic iterations per generator iteration. 
 LAMBDA = 10 # Gradient penalty lambda hyperparameter.
-LR = np.pow(np.e,args.lr)
+LR = np.power(np.e,args.lr)
 
 
 LAMBDA = 10 # For gradient penalty
