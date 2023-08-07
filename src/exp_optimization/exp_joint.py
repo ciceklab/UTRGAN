@@ -28,7 +28,7 @@ colors = ["#3c5068", "#acbab6", "#dcd3cd", "#d4a6a6", '#451120']
 
 np.random.seed(25)
 
-fig, axs = plt.subplots(4,2, gridspec_kw={'width_ratios': [3, 1]})
+fig, axs = plt.subplots(4,2,    )
 
 def prepare_mttrans(seqs):
     seqs_init = torch.tensor(np.array(one_hot_all_motif(seqs),dtype=np.float32))

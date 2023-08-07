@@ -76,7 +76,7 @@ Important notice: Please call the wgan.py script from the ./src/gan directory. T
 $ python ./src/gan/wgan.py
 ```
 
-#### Required Arguments
+#### Arguments
 
 ##### -gpu
 - The gpus that will be set as "CUDA_VISIBLE_DEVICES", cpu will be used as default
@@ -99,19 +99,13 @@ $ python ./src/gan/wgan.py
 ##### -dim, --dimension
 - The dimension of the input noise, with the default value of 40.
 
-#### Optional Arguments
-
-##### -g, --gpu
-- The ID of the GPU that will be used for training. The default setting is used otherwise.
-- The same optional argument applies to the optimization and analysis scripts.
-
 ### Optimize a single gene for optimization:
 
 ```shell
 $ python ./src/exp_optimization/single_gene.py
 ```
 
-#### Required Arguments
+#### Arguments
 
 ##### -gpu
 - The gpus that will be set as "CUDA_VISIBLE_DEVICES", cpu will be used as default
@@ -126,6 +120,9 @@ $ python ./src/exp_optimization/single_gene.py
 ##### -s
 - The number of iterations the optimization is performed. The default value is 3,000 iterations.
 
+##### -gc
+- The upper limit for the GC content (percentage(e.g. 65)). Default: No limit
+
 ##### -bc
 - The number of 5' UTR sequences generated and optimized. Default: 128.
 
@@ -135,7 +132,7 @@ $ python ./src/exp_optimization/single_gene.py
 $ python ./src/exp_optimization/multiple_genes.py
 ```
 
-#### Required Arguments
+#### Arguments
 
 ##### -gpu
 - The gpus that will be set as "CUDA_VISIBLE_DEVICES", cpu will be used as default
@@ -150,7 +147,7 @@ $ python ./src/exp_optimization/multiple_genes.py
 ##### -dc
 - The number of Randomly selected genes. Default: 128.
 
-##### -bc
+##### -bs
 - The number of 5' UTR optimized per DNA. Default: 128.
 
 ### Joint optimization of translation efficiency and gene expression:
@@ -159,7 +156,7 @@ $ python ./src/exp_optimization/multiple_genes.py
 $ python ./src/exp_optimization/joint_opt.py
 ```
 
-#### Required Arguments
+#### Arguments
 
 ##### -gpu
 - The gpus that will be set as "CUDA_VISIBLE_DEVICES", cpu will be used as default
@@ -180,7 +177,7 @@ $ python ./src/exp_optimization/joint_opt.py
 $ python ./src/mrl_te_optimization/optimize_variable_length.py
 ```
 
-#### Required Arguments
+#### Arguments
 
 ##### -lr
 - The learning rate of the Adam optimizer used to optimize the model parameters. The default value is 3e-5. 

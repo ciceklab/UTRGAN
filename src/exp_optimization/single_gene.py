@@ -471,7 +471,7 @@ if __name__ == "__main__":
 
     if args.gc > 0:
         GC_CONTROL = True
-        GC_Limit = args.gc
+        GC_Limit = float(args.gc)/100.
 
     if OPTIMIZE:
         
