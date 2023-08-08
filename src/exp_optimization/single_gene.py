@@ -129,12 +129,10 @@ def parse_biomart(path = 'martquery_0721120207_840.txt'):
     return df
 
 def convert_model(model_:Model):
-    print(model_.summary())
     input_ = tf.keras.layers.Input(shape=( 10500, 4))
     input = input_
     for i in range(len(model_.layers)-1):
 
-        print(type(model_.layers[i+1]))
         
         if isinstance(model_.layers[i+1],tf.keras.layers.Concatenate):
             paddings = tf.constant([[0,0],[0,6]])
@@ -271,10 +269,8 @@ rev_rna_vocab = {v:k for k,v in rna_vocab.items()}
 
 def select_best(scores, seqs, gc_control=False, GC=-1):
     t = np.max(scores,axis=1)
-    print(np.average(t))
     # print(scores)
     maxinds = np.argmax(scores,axis=0)
-    print(maxinds)
     selected_scores = []
     selected_seqs = []
     for i in range(len(maxinds)):
@@ -283,15 +279,6 @@ def select_best(scores, seqs, gc_control=False, GC=-1):
 
 
     return selected_seqs, selected_scores
-
-def log(samples_dir=False):
-    stamp = datetime.date.strftime(datetime.datetime.now(), "%Y.%m.%d-%Hh%Mm%Ss") + "_{}".format(socket.gethostname())
-    full_logdir = os.path.join("./logs/", "gan_test_opt", stamp)
-
-    os.makedirs(full_logdir, exist_ok=True)
-    if samples_dir: os.makedirs(os.path.join(full_logdir, "samples"), exist_ok=True)
-    log_dir = "{}:{}".format(socket.gethostname(), full_logdir)
-    return full_logdir, 0
 
 if __name__ == "__main__":
 
@@ -368,9 +355,6 @@ if __name__ == "__main__":
     with open(f'./genes/{gene_name}.txt','r') as f:
         original_gene_sequence = f.readline()
 
-    print(original_gene_sequence)
-    print(len(original_gene_sequence))
-
 
     wgan = tf.keras.models.load_model(gpath)
 
@@ -432,11 +416,8 @@ if __name__ == "__main__":
 
     seqs_init = replace_seqs_coordinate(UTRLENGTH, original_gene_sequence, seqs_gen_init)
 
-    print(np.shape(seqs_init))
 
     seqs_init = one_hot(seqs_init)
-
-    print(tf.shape(seqs_init))
 
     pred_init = model(seqs_init) 
 
@@ -459,7 +440,7 @@ if __name__ == "__main__":
     means = []
     maxes = []
     
-    STEPS = 3000
+    STEPS = args.s
 
     seqs_collection = []
     scores_collection = []

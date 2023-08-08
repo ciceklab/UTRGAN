@@ -53,22 +53,22 @@ K = 64
 gene_name = 'IFNG'
 
 init = []
-with open('./../src/exp_optimization/outputs_joint/init_exps_'+gene_name+'.txt') as f:
+with open('./outputs_joint/init_exps_'+gene_name+'.txt') as f:
     scores = f.readlines()
     init = [float(score.replace('\n','')) for score in scores]
 
 opt = []
-with open('./../src/exp_optimization/outputs_joint/opt_exps_'+gene_name+'.txt') as f:
+with open('./outputs_joint/opt_exps_'+gene_name+'.txt') as f:
     scores = f.readlines()
     opt = [float(score.replace('\n','')) for score in scores]
 
 init_seqs = []
-with open('./../src/exp_optimization/outputs_joint/init_seqs_'+gene_name+'.txt') as f:
+with open('./outputs_joint/init_seqs_'+gene_name+'.txt') as f:
     scores = f.readlines()
     init_seqs = [score.replace('\n','') for score in scores]
 
 opt_seqs = []
-with open('./../src/exp_optimization/outputs_joint/best_seqs_'+gene_name+'.txt') as f:
+with open('./outputs_joint/best_seqs_'+gene_name+'.txt') as f:
     scores = f.readlines()
     opt_seqs = [score.replace('\n','') for score in scores]
 
@@ -173,22 +173,22 @@ blue_patch = mpatches.Patch(color='tab:blue', label='Optimized Expression')
 gene_name = 'TLR6'
 
 init = []
-with open('./../src/exp_optimization/outputs_joint/init_exps_'+gene_name+'.txt') as f:
+with open('./outputs_joint/init_exps_'+gene_name+'.txt') as f:
     scores = f.readlines()
     init = [float(score.replace('\n','')) for score in scores]
 
 opt = []
-with open('./../src/exp_optimization/outputs_joint/opt_exps_'+gene_name+'.txt') as f:
+with open('./outputs_joint/opt_exps_'+gene_name+'.txt') as f:
     scores = f.readlines()
     opt = [float(score.replace('\n','')) for score in scores]
 
 init_seqs = []
-with open('./../src/exp_optimization/outputs_joint/init_seqs_'+gene_name+'.txt') as f:
+with open('./outputs_joint/init_seqs_'+gene_name+'.txt') as f:
     scores = f.readlines()
     init_seqs = [score.replace('\n','') for score in scores]
 
 opt_seqs = []
-with open('./../src/exp_optimization/outputs_joint/best_seqs_'+gene_name+'.txt') as f:
+with open('./outputs_joint/best_seqs_'+gene_name+'.txt') as f:
     scores = f.readlines()
     opt_seqs = [score.replace('\n','') for score in scores]
 
@@ -295,22 +295,22 @@ blue_patch = mpatches.Patch(color='tab:blue', label='Optimized Expression')
 gene_name = 'TNF'
 
 init = []
-with open('./../src/exp_optimization/outputs_joint/init_exps_'+gene_name+'.txt') as f:
+with open('./outputs_joint/init_exps_'+gene_name+'.txt') as f:
     scores = f.readlines()
     init = [float(score.replace('\n','')) for score in scores]
 
 opt = []
-with open('./../src/exp_optimization/outputs_joint/opt_exps_'+gene_name+'.txt') as f:
+with open('./outputs_joint/opt_exps_'+gene_name+'.txt') as f:
     scores = f.readlines()
     opt = [float(score.replace('\n','')) for score in scores]
 
 init_seqs = []
-with open('./../src/exp_optimization/outputs_joint/init_seqs_'+gene_name+'.txt') as f:
+with open('./outputs_joint/init_seqs_'+gene_name+'.txt') as f:
     scores = f.readlines()
     init_seqs = [score.replace('\n','') for score in scores]
 
 opt_seqs = []
-with open('./../src/exp_optimization/outputs_joint/best_seqs_'+gene_name+'.txt') as f:
+with open('./outputs_joint/best_seqs_'+gene_name+'.txt') as f:
     scores = f.readlines()
     opt_seqs = [score.replace('\n','') for score in scores]
 
@@ -413,22 +413,22 @@ blue_patch = mpatches.Patch(color='tab:blue', label='Optimized Expression')
 gene_name = 'TP53'
 
 init = []
-with open('./../src/exp_optimization/outputs_joint/init_exps_'+gene_name+'.txt') as f:
+with open('./outputs_joint/init_exps_'+gene_name+'.txt') as f:
     scores = f.readlines()
     init = [float(score.replace('\n','')) for score in scores]
 
 opt = []
-with open('./../src/exp_optimization/outputs_joint/opt_exps_'+gene_name+'.txt') as f:
+with open('./outputs_joint/opt_exps_'+gene_name+'.txt') as f:
     scores = f.readlines()
     opt = [float(score.replace('\n','')) for score in scores]
 
 init_seqs = []
-with open('./../src/exp_optimization/outputs_joint/init_seqs_'+gene_name+'.txt') as f:
+with open('./outputs_joint/init_seqs_'+gene_name+'.txt') as f:
     scores = f.readlines()
     init_seqs = [score.replace('\n','') for score in scores]
 
 opt_seqs = []
-with open('./../src/exp_optimization/outputs_joint/best_seqs_'+gene_name+'.txt') as f:
+with open('./outputs_joint/best_seqs_'+gene_name+'.txt') as f:
     scores = f.readlines()
     opt_seqs = [score.replace('\n','') for score in scores]
 

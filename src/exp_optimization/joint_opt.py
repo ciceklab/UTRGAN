@@ -791,5 +791,5 @@ if __name__ == "__main__":
         # print(np.average(mrl_preds_init))
         # print(np.average(mrl_preds_opt))
         print("TE:")
-        print(f'TE After First Step: {np.average(te_preds_init)}')
+        print(f'TE After First Step: {np.average(preds_opt)}')
         print(f'TE After Second Step: {np.average(te_preds_opt)}')

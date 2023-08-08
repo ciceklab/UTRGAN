@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import seaborn as sns
 import os
+import argparse
 sns.set()
 sns.set_style('ticks')
 
@@ -24,12 +25,12 @@ fig, axs = plt.subplots(2,3)
 colors = ["#3c5068", "#acbab6", "#dcd3cd", "#d4a6a6"]
 
 init = []
-with open('./../src/mrl_te_optimization/outputs/init_mrl_TE_MMRL.txt') as f:
+with open(f'./../src/mrl_te_optimization/outputs/init_mrl_TE.txt') as f:
     scores = f.readlines()
     init = [float(score.replace('\n','')) for score in scores]
 
 opt = []
-with open('./../src/mrl_te_optimization/outputs/opt_mrl_TE_MMRL.txt') as f:
+with open(f'./../src/mrl_te_optimization/outputs/opt_mrl_TE.txt') as f:
     scores = f.readlines()
     opt = [float(score.replace('\n','')) for score in scores]
 
@@ -182,12 +183,12 @@ axs[1,0].set_title('D',weight='bold',fontsize=60,loc='left')
 ######## MRL
 
 init = []
-with open('/home/sina/UTR/optimization/mrl/init_mrl_FMRL_MMRL.txt') as f:
+with open(f'/home/sina/UTR/optimization/mrl/init_mrl_FMRL.txt') as f:
     scores = f.readlines()
     init = [float(score.replace('\n','')) for score in scores]
 
 opt = []
-with open('/home/sina/UTR/optimization/mrl/opt_mrl_FMRL_MMRL.txt') as f:
+with open(f'/home/sina/UTR/optimization/mrl/opt_mrl_FMRL.txt') as f:
     scores = f.readlines()
     opt = [float(score.replace('\n','')) for score in scores]
 

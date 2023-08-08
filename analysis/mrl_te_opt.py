@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import seaborn as sns
+import argparse
 
 sns.set()
 sns.set_style('ticks')
@@ -28,6 +29,7 @@ plt.rcParams.update(params)
 
 np.random.seed(25)
 
+
 DISPLAY_DIFF = True
 
 K = 100
@@ -52,12 +54,12 @@ if DISPLAY_DIFF:
     TITLE = "A"
 
     init = []
-    with open('./../src/mrl_te_optimization/outputs/init_mrl_FMRL_MMRL.txt') as f:
+    with open(f'./../src/mrl_te_optimization/outputs/init_mrl_FMRL.txt') as f:
         scores = f.readlines()
         init = [float(score.replace('\n','')) for score in scores]
 
     opt = []
-    with open('./../src/mrl_te_optimization/outputs/opt_mrl_FMRL_MMRL.txt') as f:
+    with open(f'./../src/mrl_te_optimization/outputs/opt_mrl_FMRL.txt') as f:
         scores = f.readlines()
         opt = [float(score.replace('\n','')) for score in scores]
 
@@ -114,12 +116,12 @@ if DISPLAY_DIFF:
 
     init = []
 
-    with open('./../src/mrl_te_optimization/outputs/init_mrl_TE_MMRL.txt') as f:
+    with open(f'./../src/mrl_te_optimization/outputs/init_mrl_TE.txt') as f:
         scores = f.readlines()
         init = [float(score.replace('\n','')) for score in scores]
 
     opt = []
-    with open('./../src/mrl_te_optimization/outputs/opt_mrl_TE_MMRL.txt') as f:
+    with open(f'./../src/mrl_te_optimization/outputs/opt_mrl_TE.txt') as f:
         scores = f.readlines()
         opt = [float(score.replace('\n','')) for score in scores]
 

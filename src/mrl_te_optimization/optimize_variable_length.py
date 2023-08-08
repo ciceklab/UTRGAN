@@ -136,8 +136,8 @@ if __name__ == '__main__':
     Data:
     """
 
-    tf.random.set_seed(265)
-    np.random.seed(4354)
+    tf.random.set_seed(33)
+    np.random.seed(33)
 
     diffs = []
     init_exps = []
@@ -461,16 +461,16 @@ if __name__ == '__main__':
         min_opt = np.min(opt_t)
         max_opt = np.max(opt_t)
 
-        with open(f'./outputs/init_mrl_{OPT}_{STEPS}.txt', 'w') as f:
+        with open(f'./outputs/init_mrl_{OPT}.txt', 'w') as f:
             f.writelines([str(x)+'\n' for x in init_t])
 
-        with open(f'./outputs/opt_mrl_{OPT}_{STEPS}.txt', 'w') as f:
+        with open(f'./outputs/opt_mrl_{OPT}.txt', 'w') as f:
             f.writelines([str(x)+'\n' for x in best_scores])
 
-        with open(f'./outputs/opt_seqs_{OPT}_{STEPS}.txt', 'w') as f:
+        with open(f'./outputs/opt_seqs_{OPT}.txt', 'w') as f:
             f.writelines([str(x)+'\n' for x in best_seqs])
 
-        with open(f'./outputs/init_seqs_{OPT}_{STEPS}.txt', 'w') as f:
+        with open(f'./outputs/init_seqs_{OPT}.txt', 'w') as f:
             f.writelines([str(x)+'\n' for x in seqs_gen_init])
     
 
@@ -479,4 +479,3 @@ if __name__ == '__main__':
         print(f"Average Opt. Pred: {np.average(best_scores)}")
         print(f"Max Opt. Pred: {np.max(best_scores)}")
 
-        print(f'Motifs: \n initial positive count: {init_pos} \n initial negative count: {init_neg} \n optimized positive count: {opt_pos} \n optimized negative count: {opt_neg}')
