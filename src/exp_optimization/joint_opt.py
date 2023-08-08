@@ -31,7 +31,6 @@ import utils as util_motif
 tf.compat.v1.enable_eager_execution()
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-d', type=str, required=False ,default='./../../data/utrdb2.csv') 
 parser.add_argument('-bs', type=int, required=False ,default=64)
 parser.add_argument('-g', type=str, required=False ,default='IFNG')
 parser.add_argument('-lr', type=int, required=False ,default=1)

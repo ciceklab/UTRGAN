@@ -29,17 +29,27 @@ TRAIN_LOGDIR = os.path.join("logs_", "tensorflow", MODEL_NAME, 'train_data') # S
 if not os.path.exists(OUTPUT_PATH):
     os.makedirs(OUTPUT_PATH)
 
+
+
 file_writer = tf.summary.create_file_writer(TRAIN_LOGDIR)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-d', type=str, required=False ,default='./../../data/utrs.csv')    
+parser.add_argument('-d', type=str, required=False ,default='./../../data/utrdb2.csv')    
 parser.add_argument('-bs', type=int, required=False ,default=64)
 parser.add_argument('-lr', type=int, required=False ,default=5)
 parser.add_argument('-mil', type=int, required=False ,default=64)
 parser.add_argument('-mxl', type=int, required=False ,default=128)
 parser.add_argument('-dim', type=int, required=False ,default=40)
-parser.add_argument('-gpu', type=str, required=False ,default='6')
+parser.add_argument('-gpu', type=str, required=False ,default='-1')
 args = parser.parse_args()
+
+if args.gpu == '-1':
+    device = 'cpu'
+else:
+    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
+    device = 'cuda'
+    if args.gpu.includes(','):
+        device = 'cuda:1'
 
 def plot(x, y, logdir, name, xlabel=None, ylabel=None, title=None):
 
@@ -94,7 +104,7 @@ def log(samples_dir=False,suff=None):
     
     return full_logdir, 0
 
-data_path = './../../data/utrdb2.csv'
+data_path = args.d
 data_utr = pd.read_csv(data_path)
 UTRdf = data_utr['seq'].to_numpy()
 
@@ -106,8 +116,6 @@ for i in range(len(UTRdf)):
     if len(UTRdf[i]) < UTR_LEN+1 and len(UTRdf[i]) > int(UTR_LEN/2):
         if UTRdf[i] not in seqs:
             seqs.append(UTRdf[i])
-
-print(len(seqs))
 
 sequences = np.array(seqs)
 

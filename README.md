@@ -85,19 +85,11 @@ $ python ./src/gan/wgan.py
 - The batch size used to train the model, the default value is 64 
 
 ##### -d, --dataset
-- The CSV file including the UTR samples. The default path used is './data/utrdb2.csv'.
+- The CSV file including the UTR samples. The default path used is './../../data/utrdb2.csv'.
 
 ##### -lr, --learning_rate
 - The learning rate of the Adam optimizer used to optimize the model parameters. The default value is 1e-5. If 4 is provided, the learning rate will be 1e-4.
 
-##### -mil, --min_length
-- Minimum length of the UTRs used for training the model. Default: 64.
-
-##### -mxl, --max_length
-- Maximum length of the UTRs used for training the model. Default: 128.
-
-##### -dim, --dimension
-- The dimension of the input noise, with the default value of 40.
 
 ### Optimize a single gene for optimization:
 
@@ -123,7 +115,7 @@ $ python ./src/exp_optimization/single_gene.py
 ##### -gc
 - The upper limit for the GC content (percentage(e.g. 65)). Default: No limit
 
-##### -bc
+##### -bs
 - The number of 5' UTR sequences generated and optimized. Default: 128.
 
 ### Optimize multiple genes for optimization:
@@ -143,6 +135,9 @@ $ python ./src/exp_optimization/multiple_genes.py
 
 ##### -lr
 - The learning rate of the Adam optimizer used to optimize the model parameters. The default value is 3e-5. 
+
+##### -s
+- The number of iterations the optimization is performed. The default value is 3,000 iterations.
 
 ##### -dc
 - The number of Randomly selected genes. Default: 128.
@@ -165,6 +160,9 @@ $ python ./src/exp_optimization/joint_opt.py
 - The name of the txt file including the gene dna
 - The file should be: /src/exp_optimization/genes/GENE_NAME.txt
 
+##### -s
+- The number of iterations the optimization is performed. The default value is 1,000 iterations for both steps.
+
 ##### -lr
 - The learning rate of the Adam optimizer used to optimize the model parameters. The default value is 3e-5. 
 - 
@@ -182,11 +180,13 @@ $ python ./src/mrl_te_optimization/optimize_variable_length.py
 ##### -lr
 - The learning rate of the Adam optimizer used to optimize the model parameters. The default value is 3e-5. 
 
-##### -opt
+##### -task
 - Either "te" or "mrl"
 
 ##### -bs
 - The number of 5' UTR optimized. Default: 128.
+
+Note: Much higher number of batch sizes (up to 8192) was used for statistical tests with different seeds
 
 ## Reproduce
 
