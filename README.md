@@ -193,17 +193,25 @@ $ python ./src/mrl_te_optimization/optimize_variable_length.py
 You should run the following scripts:
 
 ./src/mrl_te_optimization.py -task te
+
 ./src/mrl_te_optimization.py -task mrl
+
 ./src/exp_optimization/multiple_genes.py
+
 ./src/exp_optimization/single_gene.py -g [IFNG, TNF, TLR6, TP53]
+
 ./src/exp_optimization/joint_opt.py -g [IFNG, TNF, TLR6, TP53]
 
 To reproduce plots:
 
 ./analysis/violin_plots.py
+
 ./analysis/plot_4x4.py
+
 ./analysis/opt_check.py
+
 ./analysis/mrl_te_opt.py
+
 ./src/exp_optimization/exp_joint.py
 
 All the plots will be in: ./analysis/plots/
