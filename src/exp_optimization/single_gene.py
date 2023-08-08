@@ -295,8 +295,6 @@ def log(samples_dir=False):
 
 if __name__ == "__main__":
 
-    logdir, checkpoint_baseline = log(samples_dir=True)
-
     model = load_model(exp_path)
 
     model = convert_model(model)
@@ -603,13 +601,6 @@ if __name__ == "__main__":
                 for item in seqs_gen_init:
                     f.write(f'{item}\n')
 
-        print(np.average(init_t))
-        print(np.average(opt_t))
 
-        print("MRL:")
-        print(np.average(mrl_preds_init))
-        print(np.average(mrl_preds_opt))
-        print("TE:")
-        print(np.average(te_preds_init))
-        print(np.average(te_preds_opt))
-        print(f"Best Average: {np.average(best_scores)}")
+        print(f"Average Initial Expression: {np.average(init_t)}")
+        print(f"Best Expression: {np.average(best_scores)}")

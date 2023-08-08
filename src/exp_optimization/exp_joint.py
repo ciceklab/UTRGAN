@@ -563,6 +563,8 @@ fig.tight_layout()
 
 plt.savefig(f'./../../analysis/plots/joint_all.png')
 
+print('Figure saved in: "./../../analysis/plots/joint_all.png"')
+
 
 
 

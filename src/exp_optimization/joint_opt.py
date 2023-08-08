@@ -300,8 +300,6 @@ def log(samples_dir=False):
 
 if __name__ == "__main__":
 
-    logdir, checkpoint_baseline = log(samples_dir=True)
-
     model = tf.keras.models.load_model('/mnt/sina/run/ml/gan/dev/predict/xpresso/humanMedian_trainepoch.11-0.426.h5')
 
     model = convert_model(model)
@@ -600,11 +598,7 @@ if __name__ == "__main__":
 
         opt_mrl = np.mean(preds_opt)
 
-    print("Frist Step:")
-    print(f"Average Initial:{np.mean(preds_init)}")
-    print(f"Max Initial:{np.amax(preds_init)}")
-    print(f"Average Opt:{np.mean(preds_opt)}")
-    print(f"Max Opt:{np.amax(preds_opt)}")
+
 
 
     ###########################################################
@@ -784,14 +778,18 @@ if __name__ == "__main__":
             for item in seqs_gen_init:
                 f.write(f'{item}\n')
 
-        print("Second Step:")
-        print(np.mean(init_t))
-        print(np.mean(intermediate_pred))
-        print(np.mean(opt_t))
-        print("MRL:")
-        print(np.average(mrl_preds_init))
-        print(np.average(mrl_preds_opt))
+        print("TE Optimization Step:")
+        print(f"Avg. Initial TE:{np.mean(preds_init)}")
+        print(f"Max Initial TE:{np.amax(preds_init)}")
+        print(f"Avg. Opt TE:{np.mean(preds_opt)}")
+        print(f"Max Opt TE:{np.amax(preds_opt)}")
+        print(f"Avg. Exp. Before First Step: {np.mean(init_t)}")
+        print("Exp. Optimizization Step:")
+        print(f'Avg. Exp. After First Step: {np.mean(intermediate_pred)}')
+        print(f'Avg. Best Exp. After Second Step: {np.mean(best_scores)}')
+        # print("MRL:")
+        # print(np.average(mrl_preds_init))
+        # print(np.average(mrl_preds_opt))
         print("TE:")
-        print(np.average(te_preds_init))
-        print(np.average(te_preds_opt))
-        print(f"Best Average: {np.average(best_scores)}")
+        print(f'TE After First Step: {np.average(te_preds_init)}')
+        print(f'TE After Second Step: {np.average(te_preds_opt)}')

@@ -126,12 +126,12 @@ def parse_biomart(path = 'reference_gene_info.txt'):
 
 
 def convert_model(model_:Model):
-    print(model_.summary())
+    # print(model_.summary())
     input_ = tf.keras.layers.Input(shape=( 10500, 4))
     input = input_
     for i in range(len(model_.layers)-1):
 
-        print(type(model_.layers[i+1]))
+        # print(type(model_.layers[i+1]))
         
         if isinstance(model_.layers[i+1],tf.keras.layers.Concatenate):
             paddings = tf.constant([[0,0],[0,6]])
@@ -330,13 +330,9 @@ if __name__ == '__main__':
 
     pred_init = model(seqs_init) 
 
-    print(tf.shape(pred_init))
-
     pred_init = tf.reshape(pred_init,(SEQ_BATCH,-1))
 
     init_t = tf.reduce_mean(pred_init,axis=0)
-
-    print(tf.shape(init_t))
 
     init_t = init_t.numpy().astype('float')
 
@@ -488,13 +484,7 @@ if __name__ == '__main__':
 
     print("Genes:")
     print(names)
-    print(np.average(init_t))
-    print(np.average(opt_t))
-    print("MRL:")
-    print(np.average(mrl_preds_init))
-    print(np.average(mrl_preds_opt))
-    print("TE:")
-    print(np.average(te_preds_init))
-    print(np.average(te_preds_opt))
+    print(f"Average Initial Expression: {np.average(init_t)}")
+    print(f"Best Expression: {np.average(best_scores)}")
 
-    print(f"best seqs average MRL: {np.average(best_scores)}")
+

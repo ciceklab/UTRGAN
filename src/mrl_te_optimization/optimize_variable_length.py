@@ -476,11 +476,7 @@ if __name__ == '__main__':
 
         print(f"Average Initial Pred: {np.average(init_t)}")
         print(f"Max Initial Pred: {np.max(init_t)}")
-        print(f"Average Opt. Pred: {np.average(opt_t)}")
-        print(f"Max Opt. Pred: {np.max(opt_t)}")
-        print(f"Best seqs average MRL: {np.average(best_scores)}")
-        x = [i for i in range(int(STEPS))]
-        plt.plot(x, predicted_mrls)
-        plt.savefig('opts')
+        print(f"Average Opt. Pred: {np.average(best_scores)}")
+        print(f"Max Opt. Pred: {np.max(best_scores)}")
 
-        print(f'Motifs: \n init pos: {init_pos} - init neg: {init_neg} \n opt pos: {opt_pos} - opt neg: {opt_neg}')
+        print(f'Motifs: \n initial positive count: {init_pos} \n initial negative count: {init_neg} \n optimized positive count: {opt_pos} \n optimized negative count: {opt_neg}')
