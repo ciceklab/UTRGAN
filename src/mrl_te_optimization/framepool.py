@@ -170,7 +170,7 @@ def create_frame_slice_model(n_conv_layers=3,
     #     inputs = [inputs] + [input_experiment]
     """ Model """
     model = Model(inputs=inputs, outputs=predict)
-    adam = tf.keras.optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
+    adam = tf.keras.optimizers.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
     model.compile(loss=loss, optimizer=adam)
     return model
 

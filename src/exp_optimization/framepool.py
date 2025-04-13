@@ -174,7 +174,7 @@ def create_frame_slice_model(n_conv_layers=3,
     model.compile(loss=loss, optimizer=adam)
     return model
 
-def load_framepool(path='/home/sina/UTR/models/utr_model_combined_residual_new.h5'):
+def load_framepool(path='./../../models/utr_model_combined_residual_new.h5'):
     model = create_frame_slice_model(kernel_size=[7,7,7],
                             only_max_pool=False,
                             padding="same",

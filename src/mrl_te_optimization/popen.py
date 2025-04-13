@@ -16,7 +16,6 @@ class Auto_popen(object):
         self.shuffle = True
         self.script_dir = utils.script_dir
         self.data_dir = utils.data_dir
-        self.data_dir = '/mnt/sina/run/ml/gan/motif/MTtrans/test.csv'
         self.log_dir = utils.log_dir
         self.pth_dir = utils.pth_dir
         self.set_attr_as_none(['te_net_l2','loss_fn','modual_to_fix','other_input_columns','pretrain_pth','kfold_index'])

@@ -168,7 +168,7 @@ def random_data(length, size):
     return samples
 
 def motif_count(gens):
-    motifs = pd.read_csv('/home/sina/UTR/data/motifs.csv')
+    motifs = pd.read_csv('./../../data/motifs.csv')
     seqs = motifs['seq']
     scores = motifs['spr']
     gen_positive = 0
