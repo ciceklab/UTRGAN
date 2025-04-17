@@ -165,7 +165,7 @@ dependencies:
   - python-slugify=8.0.1=pyhd8ed1ab_0
   - python-tzdata=2023.3=pyhd8ed1ab_0
   - python_abi=3.10=3_cp310
-  - pytorch=2.0.0=cuda112py310he33e0d6_200
+  - ma
   - pytz=2023.3=pyhd8ed1ab_0
   - pyu2f=0.1.5=pyhd8ed1ab_0
   - pyvcf3=1.0.3=pyhdfd78af_0
