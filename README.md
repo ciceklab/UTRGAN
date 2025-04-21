@@ -1,260 +1,205 @@
-# UTRGAN
+# UTRGAN: Deep Learning for 5' UTR Generation and Translation Optimization
 
-
-# UTRGAN: Learning to Generate 5' UTR Sequences for Optimized Translation Efficiency and Gene Expression
-
-
-
-> UTRGAN is a is a deep learning based model for novel 5' UTR generation and optimziation. We use the WGAN-GP architecture for the generative model, and the Xpresso, FramePool, and MTtrans models for optimizing the TPM expression, Mean Ribosome Load (MRL), and Translation Efficiency (TE), respectively.
-
-> <a href="https://en.wikipedia.org/wiki/Deep_learning" target="_blank">**Deep Learning**</a>,<a href="https://arxiv.org/pdf/1704.00028v3.pdf" target="_blank">**WGAN-GP**</a>, <a href="https://github.com/vagarwal87/Xpresso" target="_blank">**Xpresso**</a>, <a href="https://github.com/Karollus/5UTR" target="_blank">**FramePool**</a>.<a href="https://github.com/holab-hku/MTtrans" target="_blank">**MTtrans**</a>
-
-> Diagram of the generative model (WGAN) and the optimization procedure
+[![License: CC BY-NC-SA 2.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%202.0-blue.svg)](https://creativecommons.org/licenses/by-nc-sa/2.0/)
 
 <p align="center">
-<img src="./pipeline.png"   class="center"><br>
+<img src="./pipeline.png" width="700" alt="UTRGAN Pipeline"><br>
+<em>Diagram of the generative model (WGAN) and the optimization procedure</em>
+</p>
 
----
+## Overview
+
+UTRGAN is a deep learning-based model for novel 5' UTR sequence generation and optimization. The model integrates:
+
+- **WGAN-GP architecture** for the generative model
+- **Xpresso model** for optimizing TPM expression
+- **FramePool model** for optimizing Mean Ribosome Load (MRL) 
+- **MTtrans model** for optimizing Translation Efficiency (TE)
+
+UTRGAN enables researchers to design and optimize 5' UTR sequences for improved gene expression and translation efficiency, with applications in biotechnology and synthetic biology.
+
+## Table of Contents
+
+- [Authors](#authors)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Training the GAN Model](#training-the-gan-model)
+  - [Single Gene Optimization](#single-gene-optimization)
+  - [Multiple Gene Optimization](#multiple-gene-optimization)
+  - [Joint Optimization](#joint-optimization)
+  - [MRL/TE Optimization](#mrle-optimization)
+- [Reproducing Results](#reproducing-results)
+- [Citations](#citations)
+- [License](#license)
+- [Contact](#contact)
 
 ## Authors
 
-Sina Barazandeh, Furkan Ozden, Ahmet Hincer, Urartu Ozgur Safak Seker, A. Ercument Cicek
-
----
-
-## Questions & comments 
-
-[firstauthorname].[firstauthorsurname]@bilkent.edu.tr
-
-[correspondingauthorsurname]@cs.bilkent.edu.tr
-
----
-
-
-## Table of Contents 
-
-> Warning: Please note that the UTRGAN model is completely free for academic usage. However it is licenced for commercial usage. Please first refer to the [License](#license) section for more info.
-
-- [Installation](#installation)
-- [Features](#features)
-- [Instructions Manual](#instructions-manual)
-- [Reproducing Results](#reproduce)
-- [Usage Examples](#usage-examples)
-- [Citations](#citations)
-- [License](#license)
-
-
----
+- Sina Barazandeh
+- Furkan Ozden
+- Ahmet Hincer
+- Urartu Ozgur Safak Seker
+- A. Ercument Cicek
 
 ## Installation
 
-- UTRGAN is easy to use and does not require installation. The scripts can be used if the requirements are installed.
+UTRGAN requires specific dependencies which can be easily installed using the provided conda environment file.
 
 ### Requirements
 
-For easy requirement handling, you can use utrgan.yml files to initialize conda environment with requirements installed:
+For easy setup, use the provided environment file:
 
-```shell
-$ conda env create --name utrgan -f utrgan.yml
-$ conda activate utrgan
+```bash
+# Create and activate conda environment
+conda env create --name utrgan -f utrgan.yml
+conda activate utrgan
 ```
 
-Note that the provided environment yml file is for Linux systems. For MacOS users, the corresponding versions of the packages might need to be changed.
----
+The environment includes:
+- tensorflow-gpu 2.14
+- pytorch 2.0
+- cudatoolkit 11.8
+- biopython
+- pandas
+- scikit-learn
+- seaborn
+- and other dependencies
 
-## Features
+> **Note:** The provided environment file is configured for Linux systems. MacOS users may need to adjust package versions accordingly.
 
-- UTRGAN components are trained using GPUs and GPUs are used for the project. However, depending on the type of Tensorflow <a href="https://www.tensorflow.org/" target="_blank">**Tensorflow**</a> the model can run on both GPU and CPU. The run time on CPU is considerably longer compared to GPU.
+## Usage
 
+> **Important:** Run scripts from their respective directories as indicated below.
 
-## Instructions Manual
-Important notice: Please call the wgan.py script from the ./src/gan directory. The optimization scripts for gene expression and MRL/TE are in the ./src/exp_optimization and ./src/mrl_te_optimization directories, respectively. To analyze the generated seqeunces use the ./src/analysis/violin_dists.py script.
+### Training the GAN Model
 
-### Train teh GAN modes:
+To train the WGAN model:
 
-```shell
-$ python ./src/gan/wgan.py
+```bash
+python ./src/gan/wgan.py [-gpu GPU_IDS] [-bs BATCH_SIZE] [-d DATASET_PATH] [-lr LEARNING_RATE]
 ```
 
-#### Arguments
+**Arguments:**
+- `-gpu`: GPUs to use (sets CUDA_VISIBLE_DEVICES); uses CPU by default
+- `-bs, --batch_size`: Batch size (default: 64)
+- `-d, --dataset`: Path to CSV file with UTR samples (default: './../../data/utrdb2.csv')
+- `-lr, --learning_rate`: Learning rate exponent (default: 5 for 1e-5)
 
-##### -gpu
-- The gpus that will be set as "CUDA_VISIBLE_DEVICES", cpu will be used as default
+### Single Gene Optimization
 
-##### -bs, --batch_size
-- The batch size used to train the model, the default value is 64 
+Optimize 5' UTR sequences for a single gene:
 
-##### -d, --dataset
-- The CSV file including the UTR samples. The default path used is './../../data/utrdb2.csv'.
-
-##### -lr, --learning_rate
-- The learning rate of the Adam optimizer used to optimize the model parameters. The default value is 1e-5. If 4 is provided, the learning rate will be 1e-4.
-
-
-### Optimize a single gene for optimization:
-
-```shell
-$ python ./src/exp_optimization/single_gene.py
+```bash
+python ./src/exp_optimization/single_gene.py [-gpu GPU_IDS] [-g GENE_NAME] [-lr LEARNING_RATE] [-s STEPS] [-gc GC_CONTENT] [-bs BATCH_SIZE]
 ```
 
-#### Arguments
+**Arguments:**
+- `-gpu`: GPUs to use
+- `-g`: Gene name (corresponding to a file in /src/exp_optimization/genes/GENE_NAME.txt)
+- `-lr`: Learning rate (default: 3e-5)
+- `-s`: Number of optimization iterations (default: 3,000)
+- `-gc`: Upper limit for GC content percentage (default: no limit)
+- `-bs`: Number of 5' UTR sequences to generate (default: 128)
 
-##### -gpu
-- The gpus that will be set as "CUDA_VISIBLE_DEVICES", cpu will be used as default
+### Multiple Gene Optimization
 
-##### -g
-- The name of the txt file including the gene dna
-- The file should be: /src/exp_optimization/genes/GENE_NAME.txt
+Optimize 5' UTR sequences for multiple genes:
 
-##### -lr
-- The learning rate of the Adam optimizer used to optimize the model parameters. The default value is 3e-5. 
-
-##### -s
-- The number of iterations the optimization is performed. The default value is 3,000 iterations.
-
-##### -gc
-- The upper limit for the GC content (percentage(e.g. 65)). Default: No limit
-
-##### -bs
-- The number of 5' UTR sequences generated and optimized. Default: 128.
-
-### Optimize multiple genes for optimization:
-
-```shell
-$ python ./src/exp_optimization/multiple_genes.py
+```bash
+python ./src/exp_optimization/multiple_genes.py [-gpu GPU_IDS] [-g GENE_NAME] [-lr LEARNING_RATE] [-s STEPS] [-dc NUM_GENES] [-bs BATCH_SIZE]
 ```
 
-#### Arguments
+**Arguments:**
+- `-gpu`: GPUs to use
+- `-g`: Gene name file
+- `-lr`: Learning rate (default: 3e-5)
+- `-s`: Number of optimization iterations (default: 3,000)
+- `-dc`: Number of randomly selected genes (default: 128)
+- `-bs`: Number of 5' UTRs to optimize per DNA (default: 128)
 
-##### -gpu
-- The gpus that will be set as "CUDA_VISIBLE_DEVICES", cpu will be used as default
+### Joint Optimization
 
-##### -g
-- The name of the txt file including the gene dna
-- The file should be: /src/exp_optimization/genes/GENE_NAME.txt
+Jointly optimize translation efficiency and gene expression:
 
-##### -lr
-- The learning rate of the Adam optimizer used to optimize the model parameters. The default value is 3e-5. 
-
-##### -s
-- The number of iterations the optimization is performed. The default value is 3,000 iterations.
-
-##### -dc
-- The number of Randomly selected genes. Default: 128.
-
-##### -bs
-- The number of 5' UTR optimized per DNA. Default: 128.
-
-### Joint optimization of translation efficiency and gene expression:
-
-```shell
-$ python ./src/exp_optimization/joint_opt.py
+```bash
+python ./src/exp_optimization/joint_opt.py [-gpu GPU_IDS] [-g GENE_NAME] [-s STEPS] [-lr LEARNING_RATE] [-bs BATCH_SIZE]
 ```
 
-#### Arguments
+**Arguments:**
+- `-gpu`: GPUs to use
+- `-g`: Gene name file
+- `-s`: Number of iterations for each optimization step (default: 1,000)
+- `-lr`: Learning rate (default: 3e-5)
+- `-bs`: Number of 5' UTRs to optimize per DNA (default: 128)
 
-##### -gpu
-- The gpus that will be set as "CUDA_VISIBLE_DEVICES", cpu will be used as default
+### MRL/TE Optimization
 
-##### -g
-- The name of the txt file including the gene dna
-- The file should be: /src/exp_optimization/genes/GENE_NAME.txt
+Optimize 5' UTRs for high Mean Ribosome Load or Translation Efficiency:
 
-##### -s
-- The number of iterations the optimization is performed. The default value is 1,000 iterations for both steps.
-
-##### -lr
-- The learning rate of the Adam optimizer used to optimize the model parameters. The default value is 3e-5. 
-- 
-##### -bs
-- The number of 5' UTR optimized per DNA. Default: 128.
-
-### Optimize multiple UTRs for high MRL:
-
-```shell
-$ python ./src/mrl_te_optimization/optimize_variable_length.py
+```bash
+python ./src/mrl_te_optimization/optimize_variable_length.py [-lr LEARNING_RATE] [-task TASK] [-bs BATCH_SIZE]
 ```
 
-#### Arguments
+**Arguments:**
+- `-lr`: Learning rate (default: 3e-5)
+- `-task`: Optimization target - either "te" or "mrl"
+- `-bs`: Number of 5' UTRs to optimize (default: 128)
 
-##### -lr
-- The learning rate of the Adam optimizer used to optimize the model parameters. The default value is 3e-5. 
+> **Note:** For statistical tests, larger batch sizes (up to 8192) can be used with different seeds
 
-##### -task
-- Either "te" or "mrl"
+## Reproducing Results
 
-##### -bs
-- The number of 5' UTR optimized. Default: 128.
+To reproduce the results from our paper, run the following commands:
 
-Note: Much higher number of batch sizes (up to 8192) was used for statistical tests with different seeds
+```bash
+# Optimizations
+python ./src/mrl_te_optimization/optimize_variable_length.py -task te
+python ./src/mrl_te_optimization/optimize_variable_length.py -task mrl
+python ./src/exp_optimization/multiple_genes.py
+python ./src/exp_optimization/single_gene.py -g IFNG
+python ./src/exp_optimization/single_gene.py -g TNF
+python ./src/exp_optimization/single_gene.py -g TLR6
+python ./src/exp_optimization/single_gene.py -g TP53
+python ./src/exp_optimization/joint_opt.py -g IFNG
+python ./src/exp_optimization/joint_opt.py -g TNF
+python ./src/exp_optimization/joint_opt.py -g TLR6
+python ./src/exp_optimization/joint_opt.py -g TP53
 
-## Reproduce
-
-You should run the following scripts:
-
-./src/mrl_te_optimization.py -task te
-
-./src/mrl_te_optimization.py -task mrl
-
-./src/exp_optimization/multiple_genes.py
-
-./src/exp_optimization/single_gene.py -g [IFNG, TNF, TLR6, TP53]
-
-./src/exp_optimization/joint_opt.py -g [IFNG, TNF, TLR6, TP53]
-
-To reproduce plots:
-
-./analysis/violin_plots.py
-
-./analysis/plot_4x4.py
-
-./analysis/opt_check.py
-
-./analysis/mrl_te_opt.py
-
-./src/exp_optimization/exp_joint.py
-
-All the plots will be in: ./analysis/plots/
-
-The p-values, confidence intervals and effect sizes will be printed in the terminal output of the "violin_plots.py" script
-
-The average and maximum increase statistics will be printed for each boxplot generating script
-
-## Usage Examples
-
-> Usage of UTRGAN is very simple. You need to install conda to install the specific environment and run the scripts.
-
-### Step-0: Install conda package management
-
-- This project uses conda package management software to create virtual environment and facilitate reproducability.
-
-- For Linux users:
- - Please take a look at the <a href="https://repo.anaconda.com/archive/" target="_blank">**Anaconda repo archive page**</a>, and select an appropriate version that you'd like to install.
- - Replace this `Anaconda3-version.num-Linux-x86_64.sh` with your choice
-
-```shell
-$ wget -c https://repo.continuum.io/archive/Anaconda3-vers.num-Linux-x86_64.sh
-$ bash Anaconda3-version.num-Linux-x86_64.sh
+# Generate plots
+python ./src/analysis/violin_plots.py
+python ./src/analysis/plot_4x4.py
+python ./src/analysis/opt_check.py
+python ./src/analysis/mrl_te_opt.py
+python ./src/exp_optimization/exp_joint.py
 ```
 
-
-### Step-1: Set Up your environment.
-
-- It is important to set up the conda environment which includes the necessary dependencies.
-- Please run the following lines to create and activate the environment:
-
-```shell
-$ conda env create --name utrgan -f utrgan.yml
-$ conda activate utrgan
-```
+All plots will be saved to `./analysis/plots/`. P-values, confidence intervals, and effect sizes will be printed in the terminal output of the `violin_plots.py` script. Average and maximum increase statistics will be printed for each boxplot-generating script.
 
 ## Citations
 
----
+If you use UTRGAN in your research, please cite our paper:
+
+```
+[Citation information will be added upon publication]
+```
 
 ## License
 
-
 - **[CC BY-NC-SA 2.0](https://creativecommons.org/licenses/by-nc-sa/2.0/)**
-- Copyright 2023 © UTRGAN.
-- For commercial usage, please contact.
+- Copyright 2023 © UTRGAN
+- Free for academic use
+- For commercial licensing inquiries, please contact the authors
+
+## Contact
+
+- For questions and comments: sina.barazandeh@bilkent.edu.tr
+- For licensing inquiries: cicek@cs.bilkent.edu.tr
+
+---
+
+**Related Links:**
+- [Deep Learning](https://en.wikipedia.org/wiki/Deep_learning)
+- [WGAN-GP Paper](https://arxiv.org/pdf/1704.00028v3.pdf)
+- [Xpresso](https://github.com/vagarwal87/Xpresso)
+- [FramePool](https://github.com/Karollus/5UTR)
+- [MTtrans](https://github.com/holab-hku/MTtrans)
