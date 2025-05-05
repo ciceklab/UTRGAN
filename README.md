@@ -90,6 +90,49 @@ python train.py [-gpu GPU_IDS] [-bs BATCH_SIZE] [-d DATASET_PATH] [-lr LEARNING_
 - `-d, --dataset`: Path to CSV file with UTR samples (default: './../../data/utrdb2.csv')
 - `-lr, --learning_rate`: Learning rate exponent (default: 5 for 1e-5)
 
+### Example Translational Efficiency or MRL Optimization
+
+Run the optimize_te_mrl.ipynb file in the root folder:
+
+You can change the following parameters for different results. See the details further below for the meaning of the parameters
+
+```bash
+BATCH_SIZE = 64
+TASK = "mrl"     # maybe "mrl" for MLR optimization or "te" for TE optimization
+GPU = '-1'
+STEPS = 10
+```
+
+### Example Optimizations (Single Gene Expression)
+
+Run the exp_optimization_single.ipynb file in the root folder:
+
+You can change the following parameters for different results. See the details further below for the meaning of the parameters
+
+```bash
+BATCH_SIZE = 500
+GENE = 'VEGFA'
+GC_LIMIT = -1.00
+LR = 0.005
+GPU = '0'
+STEPS = 2
+```
+
+### Example Optimizations (Multiple Gene Expression)
+
+Run the exp_optimization_multiple.ipynb file in the root folder:
+
+You can change the following parameters for different results. See the details further below for the meaning of the parameters
+
+```bash
+BATCH_SIZE = 100 
+N_GENES = 8
+LR = 0.001
+GPU = '0'
+STEPS = 10
+gene_names = ["MYOC", "TIGD4", "ATP6V1B2", "TAGLN", "COX7A2L", "IFNGR2", "TNFRSF21", "SETD6"]
+```
+
 ### Single Gene Optimization
 
 Optimize 5' UTR sequences for a single gene:
@@ -167,35 +210,7 @@ GPU = '-1'
 STEPS = 10
 ```
 
-### Example Optimizations (Single Gene Expression)
 
-Run the exp_optimization_single.ipynb file in the root folder:
-
-You can change the following parameters for different results. See the details above for the meaning of the parameters
-
-```bash
-BATCH_SIZE = 500
-GENE = 'VEGFA'
-GC_LIMIT = -1.00
-LR = 0.005
-GPU = '0'
-STEPS = 2
-```
-
-### Example Optimizations (Multiple Gene Expression)
-
-Run the exp_optimization_multiple.ipynb file in the root folder:
-
-You can change the following parameters for different results. See the details above for the meaning of the parameters
-
-```bash
-BATCH_SIZE = 100 
-N_GENES = 8
-LR = 0.001
-GPU = '0'
-STEPS = 10
-gene_names = ["MYOC", "TIGD4", "ATP6V1B2", "TAGLN", "COX7A2L", "IFNGR2", "TNFRSF21", "SETD6"]
-```
 
 ## Citations
 
