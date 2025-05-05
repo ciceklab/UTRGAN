@@ -51,7 +51,7 @@ For easy setup, use the provided environment file:
 
 ```bash
 # Create and activate conda environment
-conda env create --name utrgan -f utrgan.yml
+conda env create --name utrgan -f environment.yml
 conda activate utrgan
 ```
 
@@ -69,14 +69,19 @@ The environment includes:
 
 ## Usage
 
-> **Important:** Run scripts from their respective directories as indicated below.
+> **Update (April 2025):** The latest version of UTRGAN retrieves latest version of the gene information, including 5' UTR, TSS, and sequence of the genes querying the Ensembl Biomart API. Variance in the results are expected if the information obtained from the API changes. Please note that the API might sometimes fail, in that case, please wait a few seconds and try running the gene expression optimization code again.
+
+> **Note:** We encourage trying optimization with different initializations to get more diverse sequences and select the best results. Since usually higher batch size does not fit in the GPU, you can alternatively try running the code multiple times and use the best sequences overall.
+
+
+> **Important:** You can run scripts both from the root directory or from their respective directories as indicated below. 
 
 ### Training the GAN Model
 
 To train the WGAN model:
 
 ```bash
-python ./src/gan/wgan.py [-gpu GPU_IDS] [-bs BATCH_SIZE] [-d DATASET_PATH] [-lr LEARNING_RATE]
+python train.py [-gpu GPU_IDS] [-bs BATCH_SIZE] [-d DATASET_PATH] [-lr LEARNING_RATE]
 ```
 
 **Arguments:**
@@ -89,14 +94,16 @@ python ./src/gan/wgan.py [-gpu GPU_IDS] [-bs BATCH_SIZE] [-d DATASET_PATH] [-lr 
 
 Optimize 5' UTR sequences for a single gene:
 
+> **Important:** Gene name is required here.
+
 ```bash
-python ./src/exp_optimization/single_gene.py [-gpu GPU_IDS] [-g GENE_NAME] [-lr LEARNING_RATE] [-s STEPS] [-gc GC_CONTENT] [-bs BATCH_SIZE]
+python ./src/exp_optimization/single-gene.py [-gpu GPU_IDS] [-g GENE_NAME] [-lr LEARNING_RATE] [-s STEPS] [-gc GC_CONTENT] [-bs BATCH_SIZE]
 ```
 
 **Arguments:**
-- `-gpu`: GPUs to use
-- `-g`: Gene name (corresponding to a file in /src/exp_optimization/genes/GENE_NAME.txt)
+- `-gpu`: GPUs to use (-1: no gpu, ow: any gpu)
 - `-lr`: Learning rate (default: 3e-5)
+- `g`: Gene Symbol/Name
 - `-s`: Number of optimization iterations (default: 3,000)
 - `-gc`: Upper limit for GC content percentage (default: no limit)
 - `-bs`: Number of 5' UTR sequences to generate (default: 128)
@@ -106,74 +113,89 @@ python ./src/exp_optimization/single_gene.py [-gpu GPU_IDS] [-g GENE_NAME] [-lr 
 Optimize 5' UTR sequences for multiple genes:
 
 ```bash
-python ./src/exp_optimization/multiple_genes.py [-gpu GPU_IDS] [-g GENE_NAME] [-lr LEARNING_RATE] [-s STEPS] [-dc NUM_GENES] [-bs BATCH_SIZE]
+python ./src/exp_optimization/multiple-genes.py [-gpu GPU] [-g GENE_NAMES] [-lr LEARNING_RATE] [-s STEPS] [-bs BATCH_SIZE]
 ```
 
 **Arguments:**
 - `-gpu`: GPUs to use
-- `-g`: Gene name file
+- `-g`: Gene names separated by comma (e.g., TLR6,INFG,TP53,TNF)
 - `-lr`: Learning rate (default: 3e-5)
 - `-s`: Number of optimization iterations (default: 3,000)
-- `-dc`: Number of randomly selected genes (default: 128)
-- `-bs`: Number of 5' UTRs to optimize per DNA (default: 128)
+- `-bs`: Number of 5' UTRs to optimize per DNA (default: 100)
 
 ### Joint Optimization
 
 Jointly optimize translation efficiency and gene expression:
 
 ```bash
-python ./src/exp_optimization/joint_opt.py [-gpu GPU_IDS] [-g GENE_NAME] [-s STEPS] [-lr LEARNING_RATE] [-bs BATCH_SIZE]
+python ./src/exp_optimization/joint_opt.py [-gpu GPU] [-g GENE_NAME] [-s STEPS] [-lr LEARNING_RATE] [-bs BATCH_SIZE]
 ```
 
 **Arguments:**
 - `-gpu`: GPUs to use
-- `-g`: Gene name file
+- `-g`: Gene names separated by comma (e.g., TLR6,INFG,TP53,TNF)
 - `-s`: Number of iterations for each optimization step (default: 1,000)
 - `-lr`: Learning rate (default: 3e-5)
-- `-bs`: Number of 5' UTRs to optimize per DNA (default: 128)
+- `-bs`: Number of 5' UTRs to optimize per DNA (default: 100)
 
 ### MRL/TE Optimization
 
 Optimize 5' UTRs for high Mean Ribosome Load or Translation Efficiency:
 
 ```bash
-python ./src/mrl_te_optimization/optimize_variable_length.py [-lr LEARNING_RATE] [-task TASK] [-bs BATCH_SIZE]
+python ./src/mrl_te_optimization/optimize_te_mrl.py [-lr LEARNING_RATE] [-task TASK] [-s ITERATIONS] [-bs BATCH_SIZE]
 ```
 
 **Arguments:**
 - `-lr`: Learning rate (default: 3e-5)
+- `-s`: Number of Iterations (default: 10000)
 - `-task`: Optimization target - either "te" or "mrl"
 - `-bs`: Number of 5' UTRs to optimize (default: 128)
 
 > **Note:** For statistical tests, larger batch sizes (up to 8192) can be used with different seeds
 
-## Reproducing Results
+### Example Optimizations (MRL/TE)
 
-To reproduce the results from our paper, run the following commands:
+Run the optimize_te_mrl.ipynb file in the root folder:
+
+You can change the following parameters for different results
 
 ```bash
-# Optimizations
-python ./src/mrl_te_optimization/optimize_variable_length.py -task te
-python ./src/mrl_te_optimization/optimize_variable_length.py -task mrl
-python ./src/exp_optimization/multiple_genes.py
-python ./src/exp_optimization/single_gene.py -g IFNG
-python ./src/exp_optimization/single_gene.py -g TNF
-python ./src/exp_optimization/single_gene.py -g TLR6
-python ./src/exp_optimization/single_gene.py -g TP53
-python ./src/exp_optimization/joint_opt.py -g IFNG
-python ./src/exp_optimization/joint_opt.py -g TNF
-python ./src/exp_optimization/joint_opt.py -g TLR6
-python ./src/exp_optimization/joint_opt.py -g TP53
-
-# Generate plots
-python ./src/analysis/violin_plots.py
-python ./src/analysis/plot_4x4.py
-python ./src/analysis/opt_check.py
-python ./src/analysis/mrl_te_opt.py
-python ./src/exp_optimization/exp_joint.py
+BATCH_SIZE = 64
+TASK = "mrl"
+GPU = '-1'
+STEPS = 10
 ```
 
-All plots will be saved to `./analysis/plots/`. P-values, confidence intervals, and effect sizes will be printed in the terminal output of the `violin_plots.py` script. Average and maximum increase statistics will be printed for each boxplot-generating script.
+### Example Optimizations (Single Gene Expression)
+
+Run the exp_optimization_single.ipynb file in the root folder:
+
+You can change the following parameters for different results. See the details above for the meaning of the parameters
+
+```bash
+BATCH_SIZE = 500
+GENE = 'VEGFA'
+GC_LIMIT = -1.00
+LR = 0.005
+GPU = '0'
+STEPS = 2
+```
+
+### Example Optimizations (Multiple Gene Expression)
+
+Run the exp_optimization_multiple.ipynb file in the root folder:
+
+You can change the following parameters for different results. See the details above for the meaning of the parameters
+
+```bash
+BATCH_SIZE = 100 
+N_GENES = 8
+LR = 0.001
+GPU = '0'
+STEPS = 10
+gene_names = ["MYOC", "TIGD4", "ATP6V1B2", "TAGLN", "COX7A2L", "IFNGR2", "TNFRSF21", "SETD6"]
+```
 
 ## Citations
 
