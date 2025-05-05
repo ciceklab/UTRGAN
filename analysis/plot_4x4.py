@@ -33,7 +33,7 @@ PREFIX = 'outputs/'
 
 # MIXED, REGULAR, GC_CONTROLED, MULT
 
-TYPE = 'REGULAR'
+TYPE = 'GC_CONTROLED'
 
 DISPLAY_DIFF = True
 
@@ -49,7 +49,16 @@ elif TYPE == 'GM12878':
     PREFIX = 'outputs/GM12878_'
 
 if DISPLAY_DIFF:
-    gene_name = 'TLR6'
+    parser = argparse.ArgumentParser(description="Gene Expression Optimization Visualization")
+
+    # Add arguments
+    parser.add_argument("-g", help="a list of gene names separated by comma")
+
+    # Parse the arguments
+    args = parser.parse_args()
+    gene_names = args.g.split(',')
+
+    gene_name = gene_names[0]
 
     init = []
     with open(root_path+PREFIX+'init_exps_'+gene_name+'.txt') as f:
@@ -66,15 +75,14 @@ if DISPLAY_DIFF:
     opt = np.power(10,opt)
     diffs = (opt - init)/init
 
-    print(gene_name)
-    print(f"Average Opt: {np.average(opt)}")
-    print(f"Average Init: {np.average(init)}")
-    print(f"Max Opt: {np.max(opt)}")
-    print(f"Max Init: {np.max(init)}")
-    print(f"Max Increase (wrt Init) : {np.max(opt/init)}")
-    print(f"Average Increase (wrt Init) : {np.mean(opt/init)}")
-    print(f"Max Increase (wrt Natural) : {np.max(opt/np.power(10,-0.37))}")
-    print(f"Average Percent Increase (wrt Init): {np.average(diffs)}")
+
+
+    print("####################################################################")
+    print(f"{gene_name} results:")
+    print(f"Max Opt: {np.max(opt):.2f}")
+    print(f"Max Init: {np.max(init):.2f}")
+    print(f"Average Percent Increase (wrt Init): {np.average(diffs)*100:.2f}")
+    print(f"Max Percent Increase (wrt Init): {np.max(diffs)*100:.2f}")
 
     indices = np.argsort(opt)[::-1]
 
@@ -110,7 +118,7 @@ if DISPLAY_DIFF:
     axs[0,0].set_title(gene_name,loc='left',style='italic',fontsize=64)
     axs[0,0].set_xticks([])
     
-    gene_name = 'TNF'
+    gene_name = gene_names[1]
 
     init = []
     with open(root_path+PREFIX+'init_exps_'+gene_name+'.txt') as f:
@@ -126,15 +134,12 @@ if DISPLAY_DIFF:
     opt = np.power(10,opt)
     diffs = (opt - init)/init
 
-    print(gene_name)
-    print(f"Average Opt: {np.average(opt)}")
-    print(f"Average Init: {np.average(init)}")
-    print(f"Max Opt: {np.max(opt)}")
-    print(f"Max Init: {np.max(init)}")
-    print(f"Max Increase (wrt Init) : {np.max(opt/init)}")
-    print(f"Average Increase (wrt Init) : {np.mean(opt/init)}")
-    print(f"Max Increase (wrt Natural) : {np.max(opt/np.power(10,-0.91))}")
-    print(f"Average Percent Increase (wrt Init): {np.average(diffs)}")
+    print("####################################################################")
+    print(f"{gene_name} results:")
+    print(f"Max Opt: {np.max(opt):.2f}")
+    print(f"Max Init: {np.max(init):.2f}")
+    print(f"Average Percent Increase (wrt Init): {np.average(diffs)*100:.2f}")
+    print(f"Max Percent Increase (wrt Init): {np.max(diffs)*100:.2f}")
 
     indices = np.argsort(opt)[::-1]
 
@@ -162,7 +167,7 @@ if DISPLAY_DIFF:
     axs[0,1].set_title(gene_name,loc='left',style='italic',fontsize=64)
     axs[0,1].set_xticks([])
 
-    gene_name = 'IFNG'
+    gene_name = gene_names[2]
 
     init = []
     with open(root_path+PREFIX+'init_exps_'+gene_name+'.txt') as f:
@@ -179,15 +184,12 @@ if DISPLAY_DIFF:
     opt = np.power(10,opt)
     diffs = (opt - init)/init
     
-    print(gene_name)
-    print(f"Average Opt: {np.average(opt)}")
-    print(f"Average Init: {np.average(init)}")
-    print(f"Max Opt: {np.max(opt)}")
-    print(f"Max Init: {np.max(init)}")
-    print(f"Max Increase (wrt Init) : {np.max(opt/init)}")
-    print(f"Average Increase (wrt Init) : {np.mean(opt/init)}")
-    print(f"Max Increase (wrt Natural) : {np.max(opt/np.power(10,-1.09))}")
-    print(f"Average Percent Increase (wrt Init): {np.average(diffs)}")
+    print("####################################################################")
+    print(f"{gene_name} results:")
+    print(f"Max Opt: {np.max(opt):.2f}")
+    print(f"Max Init: {np.max(init):.2f}")
+    print(f"Average Percent Increase (wrt Init): {np.average(diffs)*100:.2f}")
+    print(f"Max Percent Increase (wrt Init): {np.max(diffs)*100:.2f}")
 
     indices = np.argsort(opt)[::-1]
 
@@ -214,7 +216,8 @@ if DISPLAY_DIFF:
     axs[1,0].bar(x=ns, bottom=0, width=width, height=init_large, color=colors[3], edgecolor="white")
     axs[1,0].set_title(gene_name,loc='left',style='italic',fontsize=64)
     axs[1,0].set_xticks([])
-    gene_name = 'TP53'
+
+    gene_name = gene_names[3]
 
     init = []
     with open(root_path+PREFIX+'init_exps_'+gene_name+'.txt') as f:
@@ -230,15 +233,14 @@ if DISPLAY_DIFF:
     opt = np.power(10,opt)
     diffs = (opt - init)/init
 
-    print(gene_name)
-    print(f"Average Opt: {np.average(opt)}")
-    print(f"Average Init: {np.average(init)}")
-    print(f"Max Opt: {np.max(opt)}")
-    print(f"Max Init: {np.max(init)}")
-    print(f"Max Increase (wrt Init) : {np.max(opt/init)}")
-    print(f"Average Increase (wrt Init) : {np.mean(opt/init)}")
-    print(f"Max Increase (wrt Natural) : {np.max(opt/np.power(10,-0.63))}")
-    print(f"Average Percent Increase (wrt Init): {np.average(diffs)}")
+    print("####################################################################")
+    print(f"{gene_name} results:")
+    print(f"Max Opt: {np.max(opt):.2f}")
+    print(f"Max Init: {np.max(init):.2f}")
+    print(f"Average Percent Increase (wrt Init): {np.average(diffs)*100:.2f}")
+    print(f"Max Percent Increase (wrt Init): {np.max(diffs)*100:.2f}")
+    print("####################################################################")
+
 
     indices = np.argsort(opt)[::-1]
     init_large = []
@@ -279,7 +281,9 @@ if DISPLAY_DIFF:
     fig.tight_layout()
     plt.gcf().subplots_adjust(left=0.06)
 
-    plt.savefig(f'./plots/exp_opt_all_{TYPE}.png')
+    os.makedirs('./plots/',exist_ok=True)
+
+    plt.savefig(f'./plots/exp_opt_all_{TYPE}_{gene_names}.png')
 
 
 

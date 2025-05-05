@@ -5,8 +5,8 @@ import tensorflow as tf
 import sys
 # from IPython.display import clear_output
 import time
-from lib import models
-from lib import utils
+from src.gan.lib import models
+from src.gan.lib import utils
 import socket
 import datetime
 from tqdm import tqdm
@@ -32,7 +32,7 @@ if not os.path.exists(OUTPUT_PATH):
 file_writer = tf.summary.create_file_writer(TRAIN_LOGDIR)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-d', type=str, required=False ,default='./../../data/utrdb2.csv')    
+parser.add_argument('-d', type=str, required=False ,default='./data/utrdb2.csv')    
 parser.add_argument('-bs', type=int, required=False ,default=64)
 parser.add_argument('-lr', type=int, required=False ,default=5)
 parser.add_argument('-mil', type=int, required=False ,default=64)
