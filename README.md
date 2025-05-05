@@ -98,7 +98,7 @@ You can change the following parameters for different results. See the details f
 
 ```bash
 BATCH_SIZE = 64
-TASK = "mrl"     # maybe "mrl" for MLR optimization or "te" for TE optimization
+TASK = "mrl"     # use "mrl" for MLR optimization or "te" for TE optimization
 GPU = '-1'
 STEPS = 10
 ```
