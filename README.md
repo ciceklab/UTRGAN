@@ -208,7 +208,7 @@ If you use UTRGAN in your research, please cite our paper:
 ## License
 
 - **[CC BY-NC-SA 2.0](https://creativecommons.org/licenses/by-nc-sa/2.0/)**
-- Copyright 2023 © UTRGAN
+- Copyright 2025 © UTRGAN
 - Free for academic use
 - For commercial licensing inquiries, please contact the authors
 
