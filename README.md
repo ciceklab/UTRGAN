@@ -145,8 +145,8 @@ python ./src/exp_optimization/single-gene.py [-gpu GPU_IDS] [-g GENE_NAME] [-lr 
 
 **Arguments:**
 - `-gpu`: GPUs to use (-1: no gpu, ow: any gpu)
-- `-lr`: Learning rate (default: 3e-5)
-- `g`: Gene Symbol/Name
+- `-lr`: Learning rate (default: 3e-5) 
+- `-g`: Gene Symbol/Name
 - `-s`: Number of optimization iterations (default: 3,000)
 - `-gc`: Upper limit for GC content percentage (default: no limit)
 - `-bs`: Number of 5' UTR sequences to generate (default: 128)
@@ -161,7 +161,7 @@ python ./src/exp_optimization/multiple-genes.py [-gpu GPU] [-g GENE_NAMES] [-lr 
 
 **Arguments:**
 - `-gpu`: GPUs to use
-- `-g`: Gene names separated by comma (e.g., TLR6,INFG,TP53,TNF)
+- `-g`: Gene names separated by comma (e.g., "TLR6,INFG,TP53,TNF")
 - `-lr`: Learning rate (default: 3e-5)
 - `-s`: Number of optimization iterations (default: 3,000)
 - `-bs`: Number of 5' UTRs to optimize per DNA (default: 100)
